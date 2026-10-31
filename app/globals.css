@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+/* Theme values. Components use the tokens below and never hardcode colours. */
+:root {
+  color-scheme: light;
+  --bg: #edeae3;
+  --surface: #edeae3;
+  --text: #4a4339;
+  --text-muted: #6b6258;
+  --accent: #99573a;
+  --shadow-light: #ffffffd9;
+  --shadow-dark: #c8c3b7;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #1a1a1a;
+  --surface: #1a1a1a;
+  --text: #f1eee8;
+  --text-muted: #aaa59c;
+  --accent: #dda583;
+  --shadow-light: #282828;
+  --shadow-dark: #0c0c0c;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-raised:
+    9px 9px 18px var(--shadow-dark), -9px -9px 18px var(--shadow-light);
+  --shadow-raised-sm:
+    4px 4px 9px var(--shadow-dark), -4px -4px 9px var(--shadow-light);
+  --shadow-pressed:
+    inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.track-title {
+  text-transform: lowercase;
+}
+
+.album-art {
+  background:
+    radial-gradient(circle at 68% 30%, #f6e7cf 0 15%, #f6e7cf00 16%),
+    radial-gradient(circle at 62% 34%, #e9b98c99 0 27%, #e9b98c00 48%),
+    linear-gradient(155deg, #2f3a57 0%, #6d5470 48%, #c98468 100%);
+}
+
+.range {
+  width: 100%;
+  height: 1.75rem;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+}
+
+.range:disabled {
+  cursor: default;
+}
+
+.range::-webkit-slider-runnable-track {
+  height: 0.75rem;
+  border-radius: 9999px;
+  background: linear-gradient(to right, var(--accent) var(--fill), transparent var(--fill));
+  box-shadow: var(--shadow-pressed);
+}
+
+.range::-moz-range-track {
+  height: 0.75rem;
+  border-radius: 9999px;
+  background: linear-gradient(to right, var(--accent) var(--fill), transparent var(--fill));
+  box-shadow: var(--shadow-pressed);
+}
+
+.range::-webkit-slider-thumb {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: -0.25rem;
+  border-radius: 9999px;
+  background: var(--surface);
+  box-shadow: var(--shadow-raised-sm);
+  appearance: none;
+}
+
+.range::-moz-range-thumb {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 0;
+  border-radius: 9999px;
+  background: var(--surface);
+  box-shadow: var(--shadow-raised-sm);
+}
