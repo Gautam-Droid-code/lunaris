@@ -35,6 +35,10 @@ type PlayerActions = Pick<
   | "setVolume"
   | "toggleShuffle"
   | "toggleRepeat"
+  | "jumpTo"
+  | "removeFromQueue"
+  | "reorderQueue"
+  | "clearQueue"
 >;
 
 const actions: PlayerActions = {
@@ -46,6 +50,10 @@ const actions: PlayerActions = {
   setVolume: player.setVolume,
   toggleShuffle: player.toggleShuffle,
   toggleRepeat: player.toggleRepeat,
+  jumpTo: player.jumpTo,
+  removeFromQueue: player.removeFromQueue,
+  reorderQueue: player.reorderQueue,
+  clearQueue: player.clearQueue,
 };
 
 const PlayerContext = createContext<(PlayerState & PlayerActions) | null>(null);

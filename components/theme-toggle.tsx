@@ -3,20 +3,20 @@
 import { useSyncExternalStore } from "react";
 import { MoonIcon, SunIcon } from "@/components/icons";
 
-type Theme = "light" | "dark";
+export type Theme = "light" | "dark";
 
 const listeners = new Set<() => void>();
 
-function subscribe(listener: () => void) {
+export function subscribe(listener: () => void) {
   listeners.add(listener);
   return () => listeners.delete(listener);
 }
 
-function getTheme(): Theme {
+export function getTheme(): Theme {
   return document.documentElement.dataset.theme === "dark" ? "dark" : "light";
 }
 
-function setTheme(theme: Theme) {
+export function setTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme;
   try {
     localStorage.setItem("theme", theme);
@@ -35,7 +35,7 @@ export function ThemeToggle() {
       type="button"
       onClick={() => setTheme(next)}
       aria-label={`Switch to ${next} theme`}
-      className="grid size-11 place-items-center rounded-full bg-surface text-text shadow-raised-sm active:shadow-pressed"
+      className="nm-nav-button nm-raised-sm size-11"
     >
       {theme === "dark" ? <SunIcon /> : <MoonIcon />}
     </button>

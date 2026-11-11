@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/app-header";
 import { CollectionView } from "@/components/collection-view";
-import { LoadingCard, Notice, ServiceNotice } from "@/components/notice";
+import { Notice, ServiceNotice } from "@/components/notice";
 import { attempt, getPlaylist } from "@/lib/music";
 
 export const metadata: Metadata = { title: "Playlist · Lunaris" };
@@ -31,11 +31,21 @@ async function PlaylistContent({ params }: { params: Promise<{ id: string }> }) 
 
 export default function PlaylistPage({ params }: PageProps<"/playlist/[id]">) {
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-7 px-5 pb-32 pt-5">
-      <AppHeader showBack />
-      <Suspense fallback={<LoadingCard label="Loading playlist…" />}>
-        <PlaylistContent params={params} />
-      </Suspense>
+    <main className="nm-screen min-h-dvh">
+      <div className="nm-container flex flex-col gap-6 pb-32 pt-5">
+        <AppHeader showBack />
+        <Suspense
+          fallback={
+            <div className="flex flex-col gap-3">
+              <div className="nm-well nm-inset h-40 animate-pulse rounded-2xl" />
+              <div className="nm-well nm-inset h-14 animate-pulse rounded-2xl" />
+              <div className="nm-well nm-inset h-14 animate-pulse rounded-2xl" />
+            </div>
+          }
+        >
+          <PlaylistContent params={params} />
+        </Suspense>
+      </div>
     </main>
   );
 }

@@ -51,8 +51,8 @@ export function SearchBox() {
 
   return (
     <div>
-      <label className="flex min-h-12 items-center gap-3 rounded-full px-5 shadow-pressed focus-within:outline-2 focus-within:outline-offset-3 focus-within:outline-accent">
-        <SearchIcon className="size-5 shrink-0 text-text-muted" />
+      <label className="nm-search mx-auto flex min-h-12 max-w-2xl items-center gap-3 px-5">
+        <SearchIcon className="nm-search-icon size-5 shrink-0" />
         <span className="sr-only">Search songs, albums, artists and playlists</span>
         <input
           type="search"
@@ -62,7 +62,7 @@ export function SearchBox() {
           autoComplete="off"
           autoFocus
           placeholder="songs, albums, artists"
-          className="min-w-0 flex-1 bg-transparent py-3 outline-none placeholder:text-text-muted"
+          className="nm-search-input py-3"
         />
         <datalist id="search-suggestions">
           {suggestions.map((suggestion) => (
@@ -70,7 +70,7 @@ export function SearchBox() {
           ))}
         </datalist>
       </label>
-      <p aria-live="polite" className="mt-2 h-4 px-5 text-xs text-text-muted">
+      <p aria-live="polite" className="nm-muted mt-2 h-4 px-5 text-xs">
         {isPending ? "Searching…" : ""}
       </p>
     </div>

@@ -52,6 +52,27 @@ export const ListIcon = (p: IconProps) => (
     <path d="M4 6h16M4 12h16M4 18h10" />
   </Icon>
 );
+export const QueueIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 6h16M4 12h10M4 18h6" />
+    <path d="m17 9 3 3-3 3" />
+  </Icon>
+);
+export const GripIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="9" cy="6" r="1" fill="currentColor" />
+    <circle cx="15" cy="6" r="1" fill="currentColor" />
+    <circle cx="9" cy="12" r="1" fill="currentColor" />
+    <circle cx="15" cy="12" r="1" fill="currentColor" />
+    <circle cx="9" cy="18" r="1" fill="currentColor" />
+    <circle cx="15" cy="18" r="1" fill="currentColor" />
+  </Icon>
+);
+export const CloseIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="m6 6 12 12M18 6 6 18" />
+  </Icon>
+);
 export const HeartIcon = ({ filled, ...p }: IconProps & { filled?: boolean }) => (
   <Icon {...p}>
     <path
@@ -90,6 +111,19 @@ export const SearchIcon = (p: IconProps) => (
   <Icon {...p}>
     <circle cx="11" cy="11" r="6.5" />
     <path d="m16 16 4.5 4.5" />
+  </Icon>
+);
+export const SettingsIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="3" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </Icon>
+);
+export const MusicIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 17V5l10-2v12" />
+    <circle cx="6" cy="17" r="3" />
+    <circle cx="16" cy="15" r="3" />
   </Icon>
 );
 export const RepeatIcon = (p: IconProps) => (

@@ -5,6 +5,7 @@ import { NowPlayingBar } from "@/components/now-playing-bar";
 import { PlayerProvider } from "@/components/player-provider";
 import { TrackSheet } from "@/components/track-sheet";
 import "./globals.css";
+import "./neumorphism.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
 

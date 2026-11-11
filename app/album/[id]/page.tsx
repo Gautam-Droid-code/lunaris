@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/app-header";
 import { CollectionView } from "@/components/collection-view";
-import { LoadingCard, Notice, ServiceNotice } from "@/components/notice";
+import { Notice, ServiceNotice } from "@/components/notice";
 import { artistNames } from "@/lib/format";
 import { attempt, getAlbum } from "@/lib/music";
 
@@ -31,11 +31,21 @@ async function AlbumContent({ params }: { params: Promise<{ id: string }> }) {
 
 export default function AlbumPage({ params }: PageProps<"/album/[id]">) {
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-7 px-5 pb-32 pt-5">
-      <AppHeader showBack />
-      <Suspense fallback={<LoadingCard label="Loading album…" />}>
-        <AlbumContent params={params} />
-      </Suspense>
+    <main className="nm-screen min-h-dvh">
+      <div className="nm-container flex flex-col gap-6 pb-32 pt-5">
+        <AppHeader showBack />
+        <Suspense
+          fallback={
+            <div className="flex flex-col gap-3">
+              <div className="nm-well nm-inset h-40 animate-pulse rounded-2xl" />
+              <div className="nm-well nm-inset h-14 animate-pulse rounded-2xl" />
+              <div className="nm-well nm-inset h-14 animate-pulse rounded-2xl" />
+            </div>
+          }
+        >
+          <AlbumContent params={params} />
+        </Suspense>
+      </div>
     </main>
   );
 }

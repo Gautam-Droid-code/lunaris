@@ -1,29 +1,47 @@
 import Link from "next/link";
-import { BackIcon, LibraryIcon } from "@/components/icons";
+import { Suspense } from "react";
+import { BackIcon, LibraryIcon, SettingsIcon } from "@/components/icons";
+import { Logo } from "@/components/logo";
+import { LibraryNavLink } from "@/components/library-nav-link";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AppHeader({ showBack = false }: { showBack?: boolean }) {
   return (
-    <header className="flex items-center justify-between">
+    <header className="nm-nav-bar">
       {showBack ? (
         <Link
-          href="/"
-          aria-label="Back to home"
-          className="grid size-11 place-items-center rounded-full bg-surface shadow-raised-sm active:shadow-pressed"
+          href="/browse"
+          aria-label="Back to browse"
+          className="nm-nav-button nm-raised-sm size-11"
         >
           <BackIcon />
         </Link>
       ) : (
-        <span className="text-lg font-semibold tracking-tight">lunaris</span>
+        <Link href="/" aria-label="Lunaris home" className="inline-flex items-center">
+          <Logo variant="full" size={32} />
+        </Link>
       )}
       <div className="flex items-center gap-3">
         <Link
-          href="/library"
-          aria-label="Library"
-          className="grid size-11 place-items-center rounded-full bg-surface shadow-raised-sm active:shadow-pressed"
+          href="/settings"
+          aria-label="Settings"
+          className="nm-nav-button nm-raised-sm size-11"
         >
-          <LibraryIcon />
+          <SettingsIcon />
         </Link>
+        <Suspense
+          fallback={
+            <Link
+              href="/library"
+              aria-label="Library"
+              className="nm-nav-button nm-raised-sm size-11"
+            >
+              <LibraryIcon />
+            </Link>
+          }
+        >
+          <LibraryNavLink />
+        </Suspense>
         <ThemeToggle />
       </div>
     </header>

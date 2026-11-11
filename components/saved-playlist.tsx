@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CollectionView } from "@/components/collection-view";
 import { LoginPrompt } from "@/components/library-view";
 import { LoadingCard, Notice } from "@/components/notice";
-import { TrackList } from "@/components/track-list";
+import { clockTime } from "@/lib/format";
 import { useLibrary } from "@/lib/library-store";
 import type { Track } from "@/lib/music";
 
@@ -36,16 +37,25 @@ export function SavedPlaylist({ id }: { id: string }) {
   if (playlist === "failed") return <Notice title="This playlist didn't load. Try again." />;
   if (playlist === "missing") return <Notice title="We couldn't find that playlist" />;
 
+  const thumbnails = playlist.tracks[0]?.thumbnails ?? [];
+  const totalSeconds = playlist.tracks.reduce(
+    (sum, track) => sum + (track.durationSeconds ?? 0),
+    0,
+  );
+  const subtitle = [
+    `${playlist.tracks.length} ${playlist.tracks.length === 1 ? "song" : "songs"}`,
+    totalSeconds > 0 ? clockTime(totalSeconds) : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
-    <>
-      <h1 className="text-2xl font-semibold tracking-tight">{playlist.name}</h1>
-      {playlist.tracks.length > 0 ? (
-        <TrackList tracks={playlist.tracks} />
-      ) : (
-        <Notice title="No songs here yet">
-          Use the menu next to any song to add it to this playlist.
-        </Notice>
-      )}
-    </>
+    <CollectionView
+      kind="playlist"
+      title={playlist.name}
+      subtitle={subtitle || "0 songs"}
+      thumbnails={thumbnails}
+      tracks={playlist.tracks}
+    />
   );
 }

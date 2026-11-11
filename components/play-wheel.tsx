@@ -43,7 +43,7 @@ export function PlayWheel() {
         <NextIcon />
       </button>
       <Link
-        href="/"
+        href="/browse"
         aria-label="Back to home"
         className={`${ringButton} bottom-2 left-1/2 -translate-x-1/2 text-text-muted`}
       >

@@ -1,14 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { supabaseEnv } from "./lib/supabase/env";
 
 /** Refreshes the session cookie. Logged-out visitors skip this, so browsing stays fast. */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
   if (!request.cookies.getAll().some(({ name }) => name.startsWith("sb-"))) return response;
 
+  const { url, anonKey } = supabaseEnv();
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    anonKey,
     {
       cookies: {
         getAll: () => request.cookies.getAll(),

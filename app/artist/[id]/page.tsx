@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/app-header";
-import { Cover } from "@/components/cover";
+import { ArtistHero } from "@/components/artist-hero";
 import { MediaRow, type MediaItem } from "@/components/media-row";
-import { LoadingCard, Notice, ServiceNotice } from "@/components/notice";
+import { Notice, ServiceNotice } from "@/components/notice";
 import { TrackList } from "@/components/track-list";
 import { attempt, getArtist, type AlbumSummary } from "@/lib/music";
 
@@ -23,50 +23,77 @@ async function ArtistContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const result = await attempt(() => getArtist(id));
 
-  if (!result.ok) return <ServiceNotice kind={result.kind} />;
-  if (!result.data) return <Notice title="We couldn't find that artist" />;
+  if (!result.ok) return <ServiceNotice kind={result.kind} variant="neumorphic" />;
+  if (!result.data) return <Notice variant="neumorphic" title="We couldn't find that artist" />;
 
   const artist = result.data;
   const name = artist.name ?? "Unknown artist";
+  const subtitle = artist.monthlyListeners
+    ? `${artist.monthlyListeners} monthly listeners`
+    : artist.subscribers
+      ? `${artist.subscribers} subscribers`
+      : null;
 
   return (
-    <div className="flex flex-col gap-7">
-      <section className="flex flex-col items-center gap-4 text-center">
-        <Cover
-          thumbnails={artist.thumbnails}
-          alt={name}
-          size={320}
-          className="size-40 rounded-full shadow-raised"
-        />
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{name}</h1>
-          {artist.monthlyListeners && (
-            <p className="mt-1 text-sm text-text-muted">
-              {artist.monthlyListeners} monthly listeners
-            </p>
-          )}
-        </div>
-      </section>
+    <div className="flex flex-col gap-6">
+      <ArtistHero
+        name={name}
+        subtitle={subtitle}
+        thumbnails={artist.thumbnails}
+        tracks={artist.songs}
+      />
 
-      {artist.songs.length > 0 && (
-        <section>
-          <h2 className="mb-2 text-lg font-semibold tracking-tight">Top songs</h2>
-          <TrackList tracks={artist.songs} />
+      {artist.songs.length > 0 ? (
+        <section className="flex flex-col gap-2">
+          <h2 className="text-lg font-semibold tracking-tight nm-strong">Top songs</h2>
+          <TrackList tracks={artist.songs} variant="chart" />
+        </section>
+      ) : (
+        <Notice variant="neumorphic" title="No top songs yet">
+          Tracks will appear here when they&apos;re available.
+        </Notice>
+      )}
+
+      <MediaRow
+        title="Albums"
+        neumorphic
+        items={albumItems(artist.albums, "album")}
+      />
+      <MediaRow
+        title="Singles"
+        neumorphic
+        items={albumItems(artist.singles, "single")}
+      />
+
+      {artist.description && (
+        <section className="nm-card nm-raised p-5">
+          <h2 className="text-lg font-semibold tracking-tight nm-strong">About</h2>
+          <p className="mt-2 whitespace-pre-line text-sm leading-relaxed nm-muted">
+            {artist.description}
+          </p>
         </section>
       )}
-      <MediaRow title="Albums" items={albumItems(artist.albums, "album")} />
-      <MediaRow title="Singles" items={albumItems(artist.singles, "single")} />
     </div>
   );
 }
 
 export default function ArtistPage({ params }: PageProps<"/artist/[id]">) {
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-7 px-5 pb-32 pt-5">
-      <AppHeader showBack />
-      <Suspense fallback={<LoadingCard label="Loading artist…" />}>
-        <ArtistContent params={params} />
-      </Suspense>
+    <main className="nm-screen min-h-dvh">
+      <div className="nm-container flex flex-col gap-6 pb-32 pt-5">
+        <AppHeader showBack />
+        <Suspense
+          fallback={
+            <div className="flex flex-col gap-3">
+              <div className="nm-well nm-inset h-40 animate-pulse rounded-full" />
+              <div className="nm-well nm-inset h-14 animate-pulse rounded-2xl" />
+              <div className="nm-well nm-inset h-14 animate-pulse rounded-2xl" />
+            </div>
+          }
+        >
+          <ArtistContent params={params} />
+        </Suspense>
+      </div>
     </main>
   );
 }

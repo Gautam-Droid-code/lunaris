@@ -1,0 +1,597 @@
+/*
+ * Shared neumorphism design system.
+ *
+ * One source of truth for the app's soft-UI palette and depth. Screens opt in
+ * by using the `nm-*` classes; this file does not style any existing screen by
+ * itself.
+ *
+ * Theme marker matches app/globals.css and the pre-paint init script:
+ *   <html data-theme="dark">  -> dark palette (default token set below)
+ *   <html data-theme="light"> -> light palette
+ */
+
+:root,
+:root[data-theme="dark"] {
+  /* Depth — one value drives every surface. */
+  --nm-radius: 20px;
+  --nm-distance: 6px;
+  --nm-blur: 12px;
+
+  /* Compact depth for small chrome: nav buttons and the mini-player. */
+  --nm-distance-sm: 3px;
+  --nm-blur-sm: 6px;
+
+  /* Interaction motion: one curve keeps hover, focus, and press fluid. */
+  --nm-duration: 240ms;
+  --nm-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Dark palette (default). These are the player's current dark values. */
+  --nm-bg: #2b2f36;
+  --nm-shadow-dark: #1e2127;
+  --nm-shadow-light: #383d46;
+  --nm-text: #b7bfca;
+  --nm-text-strong: #f0f3f8;
+  /* The player's current dark accent; light uses the shared #6d7cff. */
+  --nm-accent: #8f9bff;
+}
+
+:root[data-theme="light"] {
+  --nm-bg: #e0e5ec;
+  --nm-shadow-dark: #a3b1c6;
+  --nm-shadow-light: #ffffff;
+  /* Kept from the player's existing light palette. */
+  --nm-text: #4b5563;
+  --nm-text-strong: #2d3748;
+  --nm-accent: #6d7cff;
+}
+
+/*
+ * Raised surface: light catches the top-left, the body casts down-right.
+ * Components may tune the depth with:
+ *   --nm-depth-scale  (multiplies --nm-distance)
+ *   --nm-blur-scale   (multiplies --nm-blur)
+ */
+.nm-raised {
+  --nm-d: calc(var(--nm-distance) * var(--nm-depth-scale, 1));
+  --nm-b: calc(var(--nm-blur) * var(--nm-blur-scale, 1));
+  box-shadow:
+    var(--nm-d) var(--nm-d) var(--nm-b) var(--nm-shadow-dark),
+    calc(-1 * var(--nm-d)) calc(-1 * var(--nm-d)) var(--nm-b) var(--nm-shadow-light);
+}
+
+/* Inset well: the same light source, pressed into the surface. */
+.nm-inset {
+  --nm-d: calc(var(--nm-distance) * var(--nm-depth-scale, 1));
+  --nm-b: calc(var(--nm-blur) * var(--nm-blur-scale, 1));
+  box-shadow:
+    inset var(--nm-d) var(--nm-d) var(--nm-b) var(--nm-shadow-dark),
+    inset calc(-1 * var(--nm-d)) calc(-1 * var(--nm-d)) var(--nm-b) var(--nm-shadow-light);
+}
+
+/*
+ * Pressed/active: inset depth plus strong text. Pair with `.nm-accent` (or a
+ * component's own accent marker) for the active colour cue.
+ */
+.nm-pressed {
+  --nm-d: calc(var(--nm-distance) * var(--nm-press-scale, 1));
+  --nm-b: calc(var(--nm-blur) * var(--nm-press-scale, 1));
+  background: var(--nm-bg);
+  box-shadow:
+    inset var(--nm-d) var(--nm-d) var(--nm-b) var(--nm-shadow-dark),
+    inset calc(-1 * var(--nm-d)) calc(-1 * var(--nm-d)) var(--nm-b) var(--nm-shadow-light);
+  color: var(--nm-text-strong);
+}
+
+/* Accent colour for active icons, markers, and filled controls. */
+.nm-accent {
+  color: var(--nm-accent);
+}
+
+/* When a pressed surface also carries the accent cue, accent wins over the
+   pressed primitive's strong-text colour. */
+.nm-pressed.nm-accent,
+.nm-pressed-sm.nm-accent {
+  color: var(--nm-accent);
+}
+
+/* Text link on the neumorphic surface: accent only, no extra chrome. */
+.nm-link {
+  color: var(--nm-accent);
+  font-weight: 600;
+  transition: opacity var(--nm-duration) var(--nm-ease);
+}
+
+.nm-link:hover {
+  opacity: 0.72;
+}
+
+/*
+ * Compact depth variants. Same light source and recipe as the primitives
+ * above, but scaled down for small chrome (nav buttons, mini-player).
+ */
+.nm-raised-sm {
+  box-shadow:
+    var(--nm-distance-sm) var(--nm-distance-sm) var(--nm-blur-sm) var(--nm-shadow-dark),
+    calc(-1 * var(--nm-distance-sm)) calc(-1 * var(--nm-distance-sm)) var(--nm-blur-sm)
+      var(--nm-shadow-light);
+}
+
+.nm-inset-sm {
+  box-shadow:
+    inset var(--nm-distance-sm) var(--nm-distance-sm) var(--nm-blur-sm) var(--nm-shadow-dark),
+    inset calc(-1 * var(--nm-distance-sm)) calc(-1 * var(--nm-distance-sm)) var(--nm-blur-sm)
+      var(--nm-shadow-light);
+}
+
+.nm-pressed-sm {
+  background: var(--nm-bg);
+  box-shadow:
+    inset var(--nm-distance-sm) var(--nm-distance-sm) var(--nm-blur-sm) var(--nm-shadow-dark),
+    inset calc(-1 * var(--nm-distance-sm)) calc(-1 * var(--nm-distance-sm)) var(--nm-blur-sm)
+      var(--nm-shadow-light);
+  color: var(--nm-text-strong);
+}
+
+/* --- Global navigation chrome ------------------------------------------- */
+
+/* One continuous surface: the bar shares the page's neumorphic background
+   and never casts its own shadow, so it reads as part of the surface. */
+.nm-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--nm-radius);
+  background: var(--nm-bg);
+  color: var(--nm-text);
+}
+
+.nm-nav-wordmark {
+  color: var(--nm-text-strong);
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  padding-left: 0.5rem;
+}
+
+/* Raised by default (.nm-raised-sm); hover and press move toward inset. */
+.nm-nav-button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--nm-bg);
+  color: var(--nm-text);
+  transition:
+    box-shadow var(--nm-duration) var(--nm-ease),
+    color var(--nm-duration) var(--nm-ease),
+    transform var(--nm-duration) var(--nm-ease);
+}
+
+.nm-nav-button:hover {
+  color: var(--nm-text-strong);
+  box-shadow:
+    inset calc(var(--nm-distance-sm) / 2) calc(var(--nm-distance-sm) / 2)
+      calc(var(--nm-blur-sm) / 2) var(--nm-shadow-dark),
+    inset calc(-1 * var(--nm-distance-sm) / 2) calc(-1 * var(--nm-distance-sm) / 2)
+      calc(var(--nm-blur-sm) / 2) var(--nm-shadow-light);
+}
+
+.nm-nav-button:active {
+  box-shadow:
+    inset var(--nm-distance-sm) var(--nm-distance-sm) var(--nm-blur-sm) var(--nm-shadow-dark),
+    inset calc(-1 * var(--nm-distance-sm)) calc(-1 * var(--nm-distance-sm)) var(--nm-blur-sm)
+      var(--nm-shadow-light);
+  transform: scale(0.97);
+}
+
+/* Current section: pressed treatment with the accent as the colour cue. */
+.nm-nav-button[aria-current="page"] {
+  color: var(--nm-accent);
+  box-shadow:
+    inset var(--nm-distance-sm) var(--nm-distance-sm) var(--nm-blur-sm) var(--nm-shadow-dark),
+    inset calc(-1 * var(--nm-distance-sm)) calc(-1 * var(--nm-distance-sm)) var(--nm-blur-sm)
+      var(--nm-shadow-light);
+}
+
+/* --- Persistent mini-player --------------------------------------------- */
+
+.nm-mini-player {
+  background: var(--nm-bg);
+  border-radius: var(--nm-radius);
+  color: var(--nm-text);
+}
+
+/* Inset well so the artwork sits inside the bar, not on top of it. */
+.nm-mini-thumb {
+  display: block;
+  padding: 3px;
+  border-radius: 16px;
+  background: var(--nm-bg);
+}
+
+.nm-mini-title {
+  color: var(--nm-text-strong);
+}
+
+.nm-mini-subtitle {
+  color: var(--nm-text);
+}
+
+/* Compact echo of the large transport disc. */
+.nm-mini-play {
+  border-radius: 999px;
+  background: var(--nm-bg);
+  color: var(--nm-text-strong);
+  transition:
+    box-shadow var(--nm-duration) var(--nm-ease),
+    color var(--nm-duration) var(--nm-ease),
+    transform var(--nm-duration) var(--nm-ease);
+}
+
+.nm-mini-play:hover {
+  box-shadow:
+    inset calc(var(--nm-distance-sm) / 2) calc(var(--nm-distance-sm) / 2)
+      calc(var(--nm-blur-sm) / 2) var(--nm-shadow-dark),
+    inset calc(-1 * var(--nm-distance-sm) / 2) calc(-1 * var(--nm-distance-sm) / 2)
+      calc(var(--nm-blur-sm) / 2) var(--nm-shadow-light);
+}
+
+.nm-mini-play:active:not(:disabled) {
+  box-shadow:
+    inset var(--nm-distance-sm) var(--nm-distance-sm) var(--nm-blur-sm) var(--nm-shadow-dark),
+    inset calc(-1 * var(--nm-distance-sm)) calc(-1 * var(--nm-distance-sm)) var(--nm-blur-sm)
+      var(--nm-shadow-light);
+  transform: scale(0.97);
+}
+
+/* --- Shared screen surface ----------------------------------------------- */
+
+/* Maps the app's legacy tokens onto the neumorphic palette so shared
+   components (header, notices, covers) inherit one continuous surface. */
+.nm-screen {
+  --bg: var(--nm-bg);
+  --surface: var(--nm-bg);
+  --text: var(--nm-text);
+  --text-muted: var(--nm-text);
+  --accent: var(--nm-accent);
+  --shadow-dark: var(--nm-shadow-dark);
+  --shadow-light: var(--nm-shadow-light);
+
+  background: var(--nm-bg);
+  color: var(--nm-text);
+}
+
+/*
+ * Responsive container. Mobile stays single-column and narrow; wider
+ * breakpoints grow the content area and allow multi-column grids. The
+ * neumorphic tokens are NOT affected by any breakpoint.
+ */
+.nm-container {
+  width: 100%;
+  max-width: 42rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .nm-container {
+    max-width: 56rem;
+    padding-inline: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .nm-container {
+    max-width: 72rem;
+    padding-inline: 2.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .nm-container {
+    max-width: 80rem;
+    padding-inline: 3rem;
+  }
+}
+
+.nm-muted {
+  color: var(--nm-text);
+  opacity: 0.68;
+}
+
+.nm-strong {
+  color: var(--nm-text-strong);
+}
+
+.nm-eyebrow {
+  color: var(--nm-text);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+/* Raised cards and inset wells (depth comes from the primitives above). */
+.nm-card,
+.nm-well {
+  background: var(--nm-bg);
+  border-radius: var(--nm-radius);
+}
+
+/* --- Shared result rows (Up next, search results) ------------------------ */
+
+.nm-row {
+  --nm-depth-scale: calc(2 / 3);
+  --nm-blur-scale: calc(2 / 3);
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem;
+  border-radius: 16px;
+  background: var(--nm-bg);
+  color: var(--nm-text);
+  text-align: left;
+  transition:
+    box-shadow var(--nm-duration) var(--nm-ease),
+    transform var(--nm-duration) var(--nm-ease);
+}
+
+/* Rows lift a hair on hover; press and selection still settle inward. */
+.nm-row:hover {
+  transform: translateY(-1px);
+}
+
+.nm-row:active {
+  box-shadow:
+    inset calc(var(--nm-distance) / 2) calc(var(--nm-distance) / 2)
+      calc(var(--nm-blur) / 2) var(--nm-shadow-dark),
+    inset calc(-1 * var(--nm-distance) / 2) calc(-1 * var(--nm-distance) / 2)
+      calc(var(--nm-blur) / 2) var(--nm-shadow-light);
+  transform: scale(0.99);
+}
+
+.nm-thumb {
+  --nm-depth-scale: calc(1 / 2);
+  --nm-blur-scale: calc(1 / 2);
+  border-radius: 12px;
+}
+
+/*
+ * Shared artwork fallback. Any Cover with missing or broken art becomes this
+ * inset well instead of an empty box; the note stays quiet so it never competes
+ * with real artwork.
+ */
+.nm-cover-fallback {
+  background: var(--nm-bg);
+  color: var(--nm-text);
+}
+
+.nm-cover-icon {
+  width: 42%;
+  height: 42%;
+  max-width: 1.75rem;
+  max-height: 1.75rem;
+  opacity: 0.5;
+}
+
+.nm-row-play {
+  --nm-depth-scale: calc(1 / 3);
+  --nm-blur-scale: calc(5 / 12);
+  border-radius: 999px;
+  background: var(--nm-bg);
+  color: var(--nm-text);
+}
+
+/*
+ * Song rows are flat at rest. Hover lifts them; the current/selected song
+ * stays pressed in, with its title carrying the accent colour.
+ */
+.nm-song-row {
+  box-shadow: none;
+}
+
+.nm-song-row:hover {
+  box-shadow:
+    calc(var(--nm-distance) / 2) calc(var(--nm-distance) / 2)
+      calc(var(--nm-blur) / 2) var(--nm-shadow-dark),
+    calc(-1 * var(--nm-distance) / 2) calc(-1 * var(--nm-distance) / 2)
+      calc(var(--nm-blur) / 2) var(--nm-shadow-light);
+}
+
+.nm-song-row:active {
+  box-shadow:
+    inset calc(var(--nm-distance) / 2) calc(var(--nm-distance) / 2)
+      calc(var(--nm-blur) / 2) var(--nm-shadow-dark),
+    inset calc(-1 * var(--nm-distance) / 2) calc(-1 * var(--nm-distance) / 2)
+      calc(var(--nm-blur) / 2) var(--nm-shadow-light);
+  transform: scale(0.99);
+}
+
+.nm-song-row[aria-current="true"] {
+  box-shadow:
+    inset calc(var(--nm-distance) / 2) calc(var(--nm-distance) / 2)
+      calc(var(--nm-blur) / 2) var(--nm-shadow-dark),
+    inset calc(-1 * var(--nm-distance) / 2) calc(-1 * var(--nm-distance) / 2)
+      calc(var(--nm-blur) / 2) var(--nm-shadow-light);
+  transform: none;
+}
+
+/* --- Search pill --------------------------------------------------------- */
+
+/*
+ * The pill is the only visible shape: an inset well on the neumorphic
+ * surface. The input inside contributes no border, background, or shadow.
+ */
+.nm-search {
+  background: var(--nm-bg);
+  border-radius: 999px;
+  color: var(--nm-text);
+  transition: box-shadow var(--nm-duration) var(--nm-ease);
+  box-shadow:
+    inset var(--nm-distance-sm) var(--nm-distance-sm) var(--nm-blur-sm) var(--nm-shadow-dark),
+    inset calc(var(--nm-distance-sm) * -1) calc(var(--nm-distance-sm) * -1) var(--nm-blur-sm)
+      var(--nm-shadow-light);
+}
+
+/* Focus deepens the well instead of drawing a hard ring. */
+.nm-search:focus-within,
+.nm-search:focus-visible {
+  outline: none;
+  box-shadow:
+    inset calc(var(--nm-distance-sm) * 1.75) calc(var(--nm-distance-sm) * 1.75)
+      calc(var(--nm-blur-sm) * 1.6) var(--nm-shadow-dark),
+    inset calc(var(--nm-distance-sm) * -1.75) calc(var(--nm-distance-sm) * -1.75)
+      calc(var(--nm-blur-sm) * 1.6) var(--nm-shadow-light);
+}
+
+.nm-search-icon {
+  color: var(--nm-text);
+  transition: color var(--nm-duration) var(--nm-ease);
+}
+
+/* A faint accent presence on focus, never a ring. */
+.nm-search:focus-within .nm-search-icon,
+.nm-search:focus-visible .nm-search-icon {
+  color: var(--nm-accent);
+}
+
+/* The input is invisible as a shape; the pill carries all of the styling. */
+.nm-search-input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--nm-text-strong);
+  caret-color: var(--nm-accent);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/*
+ * Auth/form field wrapper: an inset well that deepens softly on focus, with no
+ * hard border or focus ring on the input itself.
+ */
+.nm-field {
+  background: var(--nm-bg);
+  border-radius: 16px;
+  color: var(--nm-text);
+  transition: box-shadow var(--nm-duration) var(--nm-ease);
+  box-shadow:
+    inset var(--nm-distance) var(--nm-distance) var(--nm-blur) var(--nm-shadow-dark),
+    inset calc(-1 * var(--nm-distance)) calc(-1 * var(--nm-distance)) var(--nm-blur)
+      var(--nm-shadow-light);
+}
+
+.nm-field:focus-within {
+  box-shadow:
+    inset calc(var(--nm-distance) * 1.5) calc(var(--nm-distance) * 1.5)
+      calc(var(--nm-blur) * 1.4) var(--nm-shadow-dark),
+    inset calc(-1 * var(--nm-distance) * 1.5) calc(-1 * var(--nm-distance) * 1.5)
+      calc(var(--nm-blur) * 1.4) var(--nm-shadow-light);
+}
+
+.nm-search-input::placeholder {
+  color: var(--nm-text);
+  opacity: 1;
+}
+
+.nm-search-input:focus,
+.nm-search-input:focus-visible {
+  border: 0;
+  outline: none;
+  box-shadow: none;
+}
+
+/* Remove the native search field's decorations so no hard edges appear. */
+.nm-search-input::-webkit-search-decoration,
+.nm-search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* --- Motion (gated: only when the user allows motion) --------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  .nm-card {
+    transition:
+      box-shadow var(--nm-duration) var(--nm-ease),
+      transform var(--nm-duration) var(--nm-ease),
+      background-color var(--nm-duration) var(--nm-ease),
+      color var(--nm-duration) var(--nm-ease);
+  }
+
+  .nm-card:hover {
+    transform: translateY(-1px);
+  }
+
+  .nm-card:active {
+    transform: translateY(0) scale(0.995);
+  }
+
+  .nm-nav-button,
+  .nm-mini-play,
+  .nm-icon-button,
+  .nm-mini-play {
+    transition:
+      box-shadow var(--nm-duration) var(--nm-ease),
+      transform var(--nm-duration) var(--nm-ease),
+      color var(--nm-duration) var(--nm-ease),
+      background-color var(--nm-duration) var(--nm-ease);
+  }
+
+  .nm-row {
+    transition:
+      box-shadow var(--nm-duration) var(--nm-ease),
+      transform var(--nm-duration) var(--nm-ease);
+  }
+
+  .nm-screen {
+    transition:
+      background-color var(--nm-duration) var(--nm-ease),
+      color var(--nm-duration) var(--nm-ease);
+  }
+
+  .nm-container {
+    animation: nm-fade-in var(--nm-duration) var(--nm-ease) both;
+  }
+
+  @keyframes nm-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nm-nav-button,
+  .nm-mini-play,
+  .nm-row,
+  .nm-link,
+  .nm-field,
+  .nm-search,
+  .nm-search-icon,
+  .nm-container {
+    transition: none;
+    animation: none;
+  }
+
+  .nm-card {
+    transition: none;
+    animation: none;
+  }
+
+  .nm-card:hover,
+  .nm-card:active {
+    transform: none;
+  }
+}

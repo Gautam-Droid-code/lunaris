@@ -1,6 +1,25 @@
 import type { ServiceErrorKind } from "@/lib/music";
 
-export function Notice({ title, children }: { title: string; children?: React.ReactNode }) {
+type NoticeVariant = "default" | "neumorphic";
+
+export function Notice({
+  title,
+  children,
+  variant = "default",
+}: {
+  title: string;
+  children?: React.ReactNode;
+  variant?: NoticeVariant;
+}) {
+  if (variant === "neumorphic") {
+    return (
+      <div role="status" className="nm-card nm-raised p-6 text-center">
+        <p className="font-medium nm-strong">{title}</p>
+        {children && <p className="mt-1 text-sm nm-muted">{children}</p>}
+      </div>
+    );
+  }
+
   return (
     <div role="status" className="rounded-3xl p-6 text-center shadow-pressed">
       <p className="font-medium">{title}</p>
@@ -9,13 +28,21 @@ export function Notice({ title, children }: { title: string; children?: React.Re
   );
 }
 
-export function ServiceNotice({ kind }: { kind: ServiceErrorKind }) {
+export function ServiceNotice({
+  kind,
+  variant = "default",
+}: {
+  kind: ServiceErrorKind;
+  variant?: NoticeVariant;
+}) {
   return kind === "unreachable" ? (
-    <Notice title="Can't reach the music service">
+    <Notice title="Can't reach the music service" variant={variant}>
       Check that it’s running, then refresh this page.
     </Notice>
   ) : (
-    <Notice title="YouTube Music isn't responding">Please try again in a moment.</Notice>
+    <Notice title="YouTube Music isn't responding" variant={variant}>
+      Please try again in a moment.
+    </Notice>
   );
 }
 

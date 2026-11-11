@@ -6,9 +6,11 @@ export const metadata: Metadata = { title: "Library · Lunaris" };
 
 export default function LibraryPage() {
   return (
-    <main className="mx-auto flex max-w-2xl flex-col gap-6 px-5 pb-32 pt-5">
-      <AppHeader showBack />
-      <LibraryView />
+    <main className="nm-screen min-h-dvh">
+      <div className="nm-container flex flex-col gap-6 pb-32 pt-5">
+        <AppHeader showBack />
+        <LibraryView />
+      </div>
     </main>
   );
 }

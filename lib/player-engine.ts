@@ -326,5 +326,60 @@ export function createPlayer(
       update({ repeat: REPEAT_ORDER[next] });
       if (state.currentTrack) extendIfNearEnd();
     },
+
+    /** Jump playback to the track at the given queue index. */
+    jumpTo(index: number) {
+      if (index < 0 || index >= state.queue.length) return;
+      start(index);
+    },
+
+    /** Remove the track at the given queue index from the queue. */
+    removeFromQueue(index: number) {
+      if (index < 0 || index >= state.queue.length) return;
+      const newQueue = [...state.queue];
+      newQueue.splice(index, 1);
+      unshuffledQueue = null;
+      queueVersion += 1;
+      if (index === state.index) {
+        if (newQueue.length === 0) {
+          update({ queue: newQueue, index: -1, currentTrack: null, isPlaying: false });
+          backend?.pause();
+          return;
+        }
+        const newIndex = Math.min(state.index, newQueue.length - 1);
+        update({ queue: newQueue });
+        start(newIndex);
+      } else {
+        const newIndex = index < state.index ? state.index - 1 : state.index;
+        update({ queue: newQueue, index: newIndex, currentTrack: state.currentTrack });
+      }
+    },
+
+    /** Move a queued track from one index to another. */
+    reorderQueue(from: number, to: number) {
+      if (from < 0 || to < 0 || from >= state.queue.length || to >= state.queue.length || from === to) return;
+      const newQueue = [...state.queue];
+      const [moved] = newQueue.splice(from, 1);
+      newQueue.splice(to, 0, moved);
+      let newIndex = state.index;
+      if (state.index === from) newIndex = to;
+      else if (from < state.index && to >= state.index) newIndex = state.index - 1;
+      else if (from > state.index && to <= state.index) newIndex = state.index + 1;
+      unshuffledQueue = null;
+      queueVersion += 1;
+      update({ queue: newQueue, index: newIndex, currentTrack: newQueue[newIndex] ?? state.currentTrack });
+    },
+
+    /** Clear all upcoming tracks, keeping the current one playing. */
+    clearQueue() {
+      if (!state.currentTrack) {
+        update({ queue: [], index: -1, currentTrack: null });
+        return;
+      }
+      const current = state.currentTrack;
+      unshuffledQueue = null;
+      queueVersion += 1;
+      update({ queue: [current], index: 0, currentTrack: current });
+    },
   };
 }

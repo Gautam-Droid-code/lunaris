@@ -3,8 +3,8 @@ import { Suspense } from "react";
 import { AppHeader } from "@/components/app-header";
 import { LoadingCard, Notice, ServiceNotice } from "@/components/notice";
 import { NowPlayingDetails } from "@/components/now-playing-details";
-import { PlayerSlot } from "@/components/player-provider";
 import { attempt, getSong } from "@/lib/music";
+import "../now-playing.css";
 
 export const metadata: Metadata = { title: "Now Playing · Lunaris" };
 
@@ -20,15 +20,21 @@ async function SongContent({ params }: { params: Promise<{ videoId: string }> })
 
 export default function NowPlayingPage({ params }: PageProps<"/now-playing/[videoId]">) {
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col gap-7 px-6 pb-[calc(env(safe-area-inset-bottom)+2rem)] pt-5">
-      <AppHeader showBack />
-      <PlayerSlot
-        interactive
-        className="album-art aspect-video w-full overflow-hidden rounded-3xl shadow-raised"
-      />
-      <Suspense fallback={<LoadingCard label="Loading song…" />}>
-        <SongContent params={params} />
-      </Suspense>
+    <main
+      className="nm-screen min-h-dvh px-4 pb-[calc(env(safe-area-inset-bottom)_+_2rem)] pt-5 sm:px-6"
+    >
+      <div className="mx-auto w-full max-w-6xl">
+        <AppHeader showBack />
+        <Suspense
+          fallback={
+            <div className="mt-7">
+              <LoadingCard label="Loading song…" />
+            </div>
+          }
+        >
+          <SongContent params={params} />
+        </Suspense>
+      </div>
     </main>
   );
 }

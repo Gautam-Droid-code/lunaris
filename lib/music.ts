@@ -85,9 +85,16 @@ export type Playlist = {
   tracks: Track[];
 };
 
+export type TimedLyricLine = {
+  text: string;
+  start_time: number;
+  end_time?: number;
+};
+
 export type Lyrics = {
   videoId: string;
-  lyrics: string | null;
+  /** Plain text, or timed lines when the service can provide them. */
+  lyrics: string | TimedLyricLine[] | null;
   source: string | null;
   hasTimestamps: boolean;
 };

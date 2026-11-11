@@ -11,7 +11,7 @@ export async function SearchResults({
 }) {
   const { q } = await searchParams;
   const term = (Array.isArray(q) ? q[0] : q)?.trim();
-  if (!term) return <Notice title="Search for something to play" />;
+  if (!term) return <Notice title="Search for something to play" variant="neumorphic" />;
 
   const result = await attempt(() =>
     Promise.all([
@@ -21,24 +21,25 @@ export async function SearchResults({
       search(term, "playlists"),
     ]),
   );
-  if (!result.ok) return <ServiceNotice kind={result.kind} />;
+  if (!result.ok) return <ServiceNotice kind={result.kind} variant="neumorphic" />;
 
   const [songs, albums, artists, playlists] = result.data;
   if (songs.length + albums.length + artists.length + playlists.length === 0) {
-    return <Notice title={`No results for “${term}”`} />;
+    return <Notice title={`No results for “${term}”`} variant="neumorphic" />;
   }
 
   return (
     <div className="flex flex-col gap-6">
       {songs.length > 0 && (
         <section>
-          <h2 className="mb-2 text-lg font-semibold tracking-tight">Songs</h2>
-          <TrackList tracks={songs.slice(0, 8)} playsAlone />
+          <h2 className="mb-2 text-lg font-semibold tracking-tight nm-strong">Songs</h2>
+          <TrackList tracks={songs.slice(0, 8)} playsAlone variant="neumorphic" />
         </section>
       )}
       <MediaRow
         title="Artists"
         round
+        variant="rows"
         items={artists.slice(0, 10).map((artist, index) => ({
           key: artist.id ?? `artist-${index}`,
           href: artist.id ? `/artist/${artist.id}` : null,
@@ -48,6 +49,7 @@ export async function SearchResults({
       />
       <MediaRow
         title="Albums"
+        variant="rows"
         items={albums.slice(0, 10).map((album, index) => ({
           key: album.id ?? `album-${index}`,
           href: album.id ? `/album/${album.id}` : null,
@@ -58,6 +60,7 @@ export async function SearchResults({
       />
       <MediaRow
         title="Playlists"
+        variant="rows"
         items={playlists.slice(0, 10).map((playlist, index) => ({
           key: playlist.id ?? `playlist-${index}`,
           href: playlist.id ? `/playlist/${playlist.id}` : null,

@@ -7,11 +7,15 @@ export const metadata: Metadata = { title: "Log in · Lunaris" };
 
 export default function LoginPage() {
   return (
-    <main className="mx-auto flex max-w-md flex-col gap-6 px-5 pb-32 pt-5">
-      <AppHeader showBack />
-      <Suspense>
-        <LoginForm />
-      </Suspense>
+    <main className="nm-screen min-h-dvh">
+      <div className="nm-container flex min-h-[calc(100dvh-5rem)] flex-col items-center justify-center gap-6 pb-12 pt-5">
+        <AppHeader showBack />
+        <div className="w-full max-w-md">
+          <Suspense>
+            <LoginForm />
+          </Suspense>
+        </div>
+      </div>
     </main>
   );
 }

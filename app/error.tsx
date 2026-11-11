@@ -2,15 +2,22 @@
 
 export default function ErrorPage({ retry }: { retry: () => void }) {
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-5 px-6 text-center">
-      <p className="font-medium">Something went wrong</p>
-      <button
-        type="button"
-        onClick={() => retry()}
-        className="min-h-11 rounded-full bg-surface px-6 shadow-raised-sm active:shadow-pressed"
-      >
-        Try again
-      </button>
+    <main className="nm-screen min-h-dvh">
+      <div className="nm-container flex min-h-[calc(100dvh-5rem)] flex-col items-center justify-center gap-6 pb-12 pt-5">
+        <div className="nm-card nm-raised flex w-full max-w-md flex-col items-center gap-4 p-8 text-center">
+          <h1 className="text-xl font-semibold tracking-tight nm-strong">Something went wrong</h1>
+          <p className="text-sm nm-muted">
+            An unexpected error occurred. You can try again.
+          </p>
+          <button
+            type="button"
+            onClick={() => retry()}
+            className="nm-card nm-raised-sm mt-2 inline-flex min-h-11 items-center justify-center rounded-2xl px-6 text-sm font-medium nm-strong"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
     </main>
   );
 }
