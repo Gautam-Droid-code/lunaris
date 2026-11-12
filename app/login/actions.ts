@@ -78,6 +78,9 @@ export async function requestPasswordReset(_: AuthResult, form: FormData): Promi
   try {
     const supabase = await createSupabase();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      // Default template: the link goes via /auth/callback (code exchange). Once custom
+      // SMTP unlocks the template, point it straight at /reset-password?token_hash=...,
+      // which updatePassword verifies on submit (prefetch-safe).
       redirectTo: `${await origin()}/auth/callback?next=/reset-password`,
     });
     if (error) return { status: "error", message: error.message };
@@ -91,15 +94,32 @@ export async function requestPasswordReset(_: AuthResult, form: FormData): Promi
 /** Sets a new password for the visitor whose recovery link gave them a session. */
 export async function updatePassword(_: AuthResult, form: FormData): Promise<AuthResult> {
   const password = String(form.get("password") ?? "");
+  const tokenHash = String(form.get("token_hash") ?? "");
   if (password.length < MIN_PASSWORD_LENGTH) {
     return { status: "error", message: `Use at least ${MIN_PASSWORD_LENGTH} characters.` };
   }
 
   try {
     const supabase = await createSupabase();
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) {
-      return { status: "error", message: "Your reset link has expired. Request a new one." };
+    // Verify the recovery token here, on submit — not when the page loads — so that
+    // an email provider pre-scanning the link can't burn the one-time token early.
+    if (tokenHash) {
+      const { error } = await supabase.auth.verifyOtp({ type: "recovery", token_hash: tokenHash });
+      if (error) {
+        return {
+          status: "error",
+          message: "Your reset link is invalid or has expired. Request a new one.",
+        };
+      }
+    } else {
+      // Fallback for an already-established recovery session.
+      const { data } = await supabase.auth.getUser();
+      if (!data.user) {
+        return {
+          status: "error",
+          message: "Your reset link is invalid or has expired. Request a new one.",
+        };
+      }
     }
     const { error } = await supabase.auth.updateUser({ password });
     if (error) return { status: "error", message: error.message };

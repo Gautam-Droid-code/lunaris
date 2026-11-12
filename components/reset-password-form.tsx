@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useActionState, useEffect } from "react";
 import { updatePassword, type AuthResult } from "@/app/login/actions";
 import { loadLibrary } from "@/lib/library-store";
@@ -9,11 +9,14 @@ const fieldWrapper = "nm-field flex min-h-12 items-center px-4";
 
 export function ResetPasswordForm() {
   const router = useRouter();
+  const params = useSearchParams();
+  // The recovery link carries this; it's verified on submit, not on load.
+  const tokenHash = params.get("token_hash") ?? "";
   const [result, action, pending] = useActionState<AuthResult, FormData>(updatePassword, {
     status: "idle",
   });
 
-  // The recovery link already signed them in, so once the password is set, go to the library.
+  // Verifying the token signs them in, so once the password is set, go to the library.
   useEffect(() => {
     if (result.status === "done") void loadLibrary().then(() => router.replace("/library"));
   }, [result, router]);
@@ -21,6 +24,7 @@ export function ResetPasswordForm() {
   return (
     <form action={action} className="nm-card nm-raised flex flex-col gap-4 rounded-3xl p-6">
       <h1 className="text-2xl font-semibold tracking-tight nm-strong">Set a new password</h1>
+      <input type="hidden" name="token_hash" value={tokenHash} />
       <span className={fieldWrapper}>
         <input
           name="password"

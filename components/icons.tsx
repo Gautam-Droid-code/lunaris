@@ -24,6 +24,11 @@ export const PlayIcon = (p: IconProps) => (
     <path d="M7 4.5v15l12-7.5z" fill="currentColor" />
   </Icon>
 );
+export const PlusIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 5v14M5 12h14" />
+  </Icon>
+);
 export const PauseIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M8 5v14M16 5v14" strokeWidth="3.5" />
@@ -50,6 +55,14 @@ export const ShuffleIcon = (p: IconProps) => (
 export const ListIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M4 6h16M4 12h16M4 18h10" />
+  </Icon>
+);
+export const GroupIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="9" cy="8" r="3" />
+    <circle cx="17" cy="9" r="2.5" />
+    <path d="M3 19c0-3.3 2.7-6 6-6s6 2.7 6 6" />
+    <path d="M14 19c0-2.2 1.8-4 4-4s4 1.8 4 4" />
   </Icon>
 );
 export const QueueIcon = (p: IconProps) => (

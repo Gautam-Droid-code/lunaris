@@ -14,8 +14,13 @@ export async function createSupabase() {
       cookies: {
         getAll: () => cookieStore.getAll(),
         setAll(cookiesToSet) {
-          for (const { name, value, options } of cookiesToSet) {
-            cookieStore.set(name, value, options);
+          try {
+            for (const { name, value, options } of cookiesToSet) {
+              cookieStore.set(name, value, options);
+            }
+          } catch {
+            // Called from a Server Component, where cookies are read-only.
+            // The proxy refreshes the session, so this is safe to ignore.
           }
         },
       },

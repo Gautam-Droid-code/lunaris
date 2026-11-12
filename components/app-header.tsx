@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { BackIcon, LibraryIcon, SettingsIcon } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { LibraryNavLink } from "@/components/library-nav-link";
+import { RoomNavLink } from "@/components/room-nav-link";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AppHeader({ showBack = false }: { showBack?: boolean }) {
@@ -29,6 +30,9 @@ export function AppHeader({ showBack = false }: { showBack?: boolean }) {
         >
           <SettingsIcon />
         </Link>
+        <Suspense fallback={null}>
+          <RoomNavLink />
+        </Suspense>
         <Suspense
           fallback={
             <Link
