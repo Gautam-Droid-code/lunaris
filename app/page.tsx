@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import { WelcomeView } from "@/components/welcome-view";
 import { attempt, getCharts, getPlaylist } from "@/lib/music";
 import { createSupabase } from "@/lib/supabase/server";
@@ -13,7 +12,6 @@ async function Content() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (user) redirect("/browse");
 
   const charts = await attempt(() => getCharts());
   const data = charts.ok ? charts.data : null;
@@ -22,7 +20,7 @@ async function Content() {
     ? await attempt(() => getPlaylist(featured.id as string, 8))
     : null;
   const tracks = playlist?.ok ? (playlist.data?.tracks ?? []) : [];
-  return <WelcomeView charts={data} tracks={tracks} />;
+  return <WelcomeView charts={data} tracks={tracks} signedIn={!!user} />;
 }
 
 export default function HomePage() {

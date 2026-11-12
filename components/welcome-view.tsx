@@ -15,9 +15,11 @@ type Charts = NonNullable<Awaited<ReturnType<typeof getCharts>>>;
 export function WelcomeView({
   charts,
   tracks,
+  signedIn = false,
 }: {
   charts: Charts | null;
   tracks: Track[];
+  signedIn?: boolean;
 }) {
   const { playTrack } = usePlayer();
   const topSongs = tracks.slice(0, 6);
@@ -30,9 +32,15 @@ export function WelcomeView({
         <header className="flex items-center justify-between">
           <Logo variant="full" size={28} />
           <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm nm-link">
-              Log in
-            </Link>
+            {signedIn ? (
+              <Link href="/library" className="text-sm nm-link">
+                Library
+              </Link>
+            ) : (
+              <Link href="/login" className="text-sm nm-link">
+                Log in
+              </Link>
+            )}
             <ThemeToggle />
           </div>
         </header>
@@ -54,12 +62,21 @@ export function WelcomeView({
             >
               Start listening
             </Link>
-            <Link
-              href="/login"
-              className="nm-card nm-raised-sm inline-flex min-h-12 items-center justify-center rounded-2xl px-6 text-sm font-medium nm-strong"
-            >
-              Log in
-            </Link>
+            {signedIn ? (
+              <Link
+                href="/library"
+                className="nm-card nm-raised-sm inline-flex min-h-12 items-center justify-center rounded-2xl px-6 text-sm font-medium nm-strong"
+              >
+                Your library
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="nm-card nm-raised-sm inline-flex min-h-12 items-center justify-center rounded-2xl px-6 text-sm font-medium nm-strong"
+              >
+                Log in
+              </Link>
+            )}
           </div>
         </section>
 
