@@ -26,7 +26,7 @@ const themeScript = `try{var t=localStorage.getItem("theme");if(t!=="light"&&t!=
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${inter.variable} antialiased`} suppressHydrationWarning>
-      <head>
+      <head suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-dvh font-sans">
