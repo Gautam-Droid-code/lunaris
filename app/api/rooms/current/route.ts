@@ -7,6 +7,8 @@ export async function GET(request: NextRequest) {
       .from("room_members")
       .select("room_id, rooms(id, code, leader_id)")
       .eq("user_id", user.id)
+      .order("joined_at", { ascending: false })
+      .limit(1)
       .maybeSingle();
     if (error || !data) return NextResponse.json(null);
     const rooms = (data as { rooms: { id: string; code: string; leader_id: string } | { id: string; code: string; leader_id: string }[] | null }).rooms;

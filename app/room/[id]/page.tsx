@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import { AppHeader } from "@/components/app-header";
 import { Notice } from "@/components/notice";
-import { clearCurrentRoom, getCurrentRoom, refreshCurrentRoom, useCurrentRoom } from "@/lib/room-store";
+import { clearCurrentRoom, refreshCurrentRoom, useCurrentRoom } from "@/lib/room-store";
 
 export default function RoomScreen({ params }: { params: Promise<{ id: string }> }) {
   const [id, setId] = useState<string | null>(null);
@@ -14,7 +14,8 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
   }, [params]);
 
   const router = useRouter();
-  const { room, members } = useCurrentRoom();
+  const { members } = useCurrentRoom();
+  const [room, setRoom] = useState<{ id: string; code: string; leader_id: string; isLeader: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -30,15 +31,15 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
       if (data.user) setUserId(data.user.id);
       await refreshCurrentRoom();
       if (!mounted) return;
-      if (!getCurrentRoom()) {
-        // fallback: fetch directly
-        const res = await fetch(`/api/rooms/${id}`);
-        if (!res.ok) {
-          setError("Room not found");
-          setLoading(false);
-          return;
-        }
+      const res = await fetch(`/api/rooms/${id}`);
+      if (!res.ok) {
+        setError("Room not found");
+        setLoading(false);
+        return;
       }
+      const r = await res.json();
+      if (!mounted) return;
+      setRoom(r);
       setLoading(false);
     })();
     return () => {
@@ -66,6 +67,8 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: targetUserId }),
       });
+      const res = await fetch(`/api/rooms/${id}`);
+      if (res.ok) setRoom(await res.json());
       await refreshCurrentRoom();
     } finally {
       setBusy(false);
@@ -83,21 +86,18 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
     );
   }
 
-  if (error || !room || room.id !== id) {
-    // if store room not loaded yet, try direct fetch state
-    if (!room) {
-      return (
-        <main className="nm-screen min-h-dvh">
-          <div className="nm-container flex flex-col gap-6 pb-32 pt-5">
-            <AppHeader showBack />
-            <Notice variant="neumorphic" title={error ?? "Room not found"} />
-          </div>
-        </main>
-      );
-    }
+  if (error || !room) {
+    return (
+      <main className="nm-screen min-h-dvh">
+        <div className="nm-container flex flex-col gap-6 pb-32 pt-5">
+          <AppHeader showBack />
+          <Notice variant="neumorphic" title={error ?? "Room not found"} />
+        </div>
+      </main>
+    );
   }
 
-  const r = room!;
+  const r = room;
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const joinUrl = `${origin}/room?code=${r.code}`;
 
