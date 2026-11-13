@@ -15,6 +15,7 @@ type State = {
 let state: State = { room: null, members: [], ready: false };
 const listeners = new Set<() => void>();
 let cleanup: (() => void) | null = null;
+let heartbeat: ReturnType<typeof setInterval> | null = null;
 
 function emit() {
   listeners.forEach((l) => l());
@@ -68,7 +69,16 @@ function openChannel(roomId: string, userId: string, name: string) {
       await ch.track({ userId, name });
     }
   });
+  const touch = () => {
+    void supabase.rpc("touch_room_membership", { p_room: roomId });
+  };
+  touch();
+  heartbeat = setInterval(touch, 45000);
   cleanup = () => {
+    if (heartbeat) {
+      clearInterval(heartbeat);
+      heartbeat = null;
+    }
     try {
       ch.untrack();
     } catch {
@@ -98,6 +108,10 @@ export async function refreshCurrentRoom() {
 }
 
 export function clearCurrentRoom() {
+  if (heartbeat) {
+    clearInterval(heartbeat);
+    heartbeat = null;
+  }
   if (cleanup) {
     cleanup();
     cleanup = null;
