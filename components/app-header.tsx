@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { BackIcon } from "@/components/icons";
+import { Suspense } from "react";
+import { BackIcon, SettingsIcon } from "@/components/icons";
 import { Logo } from "@/components/logo";
+import { RoomNavLink } from "@/components/room-nav-link";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AppHeader({ showBack = false }: { showBack?: boolean }) {
@@ -20,6 +22,18 @@ export function AppHeader({ showBack = false }: { showBack?: boolean }) {
         </Link>
       )}
       <div className="flex items-center gap-3">
+        <Link
+          href="/settings"
+          aria-label="Settings"
+          className="nm-nav-button nm-raised-sm size-11 md:hidden"
+        >
+          <SettingsIcon />
+        </Link>
+        <div className="md:hidden">
+          <Suspense fallback={null}>
+            <RoomNavLink />
+          </Suspense>
+        </div>
         <ThemeToggle />
       </div>
     </header>

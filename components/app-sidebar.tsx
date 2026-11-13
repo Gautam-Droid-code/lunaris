@@ -87,6 +87,12 @@ export function AppSidebar() {
         <NavItem href="/" label="Listen Now" icon={<HomeIcon className="size-5" />} expanded={expanded} />
         <NavItem href="/browse" label="Browse" icon={<BrowseIcon className="size-5" />} expanded={expanded} />
         <NavItem href="/search" label="Search" icon={<SearchIcon className="size-5" />} expanded={expanded} />
+        <div className="flex items-center gap-2">
+          <Suspense fallback={null}>
+            <RoomNavLink />
+          </Suspense>
+          {expanded && <span className="text-sm font-medium nm-strong">Group</span>}
+        </div>
       </nav>
 
       <div className="flex flex-col gap-1">
@@ -98,9 +104,6 @@ export function AppSidebar() {
       </div>
 
       <div className="mt-auto flex flex-col gap-2">
-        <Suspense fallback={null}>
-          <RoomNavLink />
-        </Suspense>
         {ready && user ? (
           <div className="flex flex-col gap-2">
             <button
