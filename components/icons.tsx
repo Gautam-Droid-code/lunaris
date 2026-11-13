@@ -65,6 +65,13 @@ export const GroupIcon = (p: IconProps) => (
     <path d="M14 19c0-2.2 1.8-4 4-4s4 1.8 4 4" />
   </Icon>
 );
+export const LeaveIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <path d="M16 17l5-5-5-5" />
+    <path d="M21 12H9" />
+  </Icon>
+);
 export const QueueIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M4 6h16M4 12h10M4 18h6" />

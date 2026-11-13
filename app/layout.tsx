@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { Suspense } from "react";
 import { NowPlayingBar } from "@/components/now-playing-bar";
 import { PlayerProvider } from "@/components/player-provider";
+import { RoomPresence } from "@/components/room-presence";
 import { TrackSheet } from "@/components/track-sheet";
 import "./globals.css";
 import "./neumorphism.css";
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-dvh font-sans">
         <PlayerProvider>
+          <RoomPresence />
           {children}
           <Suspense>
             <NowPlayingBar />

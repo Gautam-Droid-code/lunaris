@@ -3,36 +3,36 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AppHeader } from "@/components/app-header";
-import { Notice } from "@/components/notice";
+import { refreshCurrentRoom, useCurrentRoom } from "@/lib/room-store";
 
 function RoomEntry() {
   const router = useRouter();
   const params = useSearchParams();
   const codeParam = params.get("code");
 
+  const { room, ready } = useCurrentRoom();
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [checked, setChecked] = useState(false);
 
-  async function startRoom() {
-    setBusy(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/rooms", { method: "POST" });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.error ?? "Couldn't create room");
-      }
-      const room = await res.json();
-      router.push(`/room/${room.id}`);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn't create room");
-    } finally {
-      setBusy(false);
+  useEffect(() => {
+    void refreshCurrentRoom().then(() => setChecked(true));
+  }, []);
+
+  useEffect(() => {
+    if (!checked) return;
+    if (codeParam && codeParam.length === 6) {
+      void joinByCode(codeParam);
+      return;
     }
-  }
+    if (room) {
+      router.replace(`/room/${room.id}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checked, codeParam, room, router]);
 
-  async function joinRoom(rawCode: string) {
+  async function joinByCode(rawCode: string) {
     const trimmed = rawCode.trim().toUpperCase();
     if (trimmed.length !== 6) {
       setError("Enter a 6-character code");
@@ -50,8 +50,9 @@ function RoomEntry() {
         const body = await res.json().catch(() => ({}));
         throw new Error(body?.error ?? "Couldn't join room");
       }
-      const room = await res.json();
-      router.push(`/room/${room.id}`);
+      const r = await res.json();
+      await refreshCurrentRoom();
+      router.push(`/room/${r.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Couldn't join room");
     } finally {
@@ -59,12 +60,32 @@ function RoomEntry() {
     }
   }
 
-  useEffect(() => {
-    if (codeParam && codeParam.length === 6) {
-      void joinRoom(codeParam);
+  async function startRoom() {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/rooms", { method: "POST" });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error ?? "Couldn't create room");
+      }
+      const r = await res.json();
+      await refreshCurrentRoom();
+      router.push(`/room/${r.id}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't create room");
+    } finally {
+      setBusy(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [codeParam]);
+  }
+
+  if (!checked || !ready) {
+    return <div className="nm-well nm-inset h-24 animate-pulse rounded-2xl" />;
+  }
+
+  if (room && !codeParam) {
+    return <div className="nm-well nm-inset h-24 animate-pulse rounded-2xl" />;
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -94,7 +115,7 @@ function RoomEntry() {
             </span>
             <button
               type="button"
-              onClick={() => joinRoom(code)}
+              onClick={() => joinByCode(code)}
               disabled={busy}
               className="nm-card nm-raised-sm rounded-2xl px-5 text-sm font-medium nm-strong disabled:opacity-60"
             >

@@ -5,65 +5,46 @@ import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import { AppHeader } from "@/components/app-header";
 import { Notice } from "@/components/notice";
-import { createSupabaseBrowser } from "@/lib/supabase/client";
-import { displayName, joinRoomChannel, type RoomPresence } from "@/lib/room-channel";
-
-type Room = { id: string; code: string; leader_id: string; isLeader: boolean };
+import { clearCurrentRoom, getCurrentRoom, refreshCurrentRoom, useCurrentRoom } from "@/lib/room-store";
 
 export default function RoomScreen({ params }: { params: Promise<{ id: string }> }) {
-  // Unwrap params
   const [id, setId] = useState<string | null>(null);
   useEffect(() => {
     params.then((p) => setId(p.id));
   }, [params]);
 
   const router = useRouter();
-  const [room, setRoom] = useState<Room | null>(null);
-  const [members, setMembers] = useState<RoomPresence[]>([]);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [name, setName] = useState("Guest");
+  const { room, members } = useCurrentRoom();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
-    let cleanup: (() => void) | null = null;
     let mounted = true;
-
     (async () => {
-      const supabase = createSupabaseBrowser();
+      const supabase = (await import("@/lib/supabase/client")).createSupabaseBrowser();
       const { data } = await supabase.auth.getUser();
-      const user = data.user;
-      if (!user) {
-        router.push("/login?next=" + encodeURIComponent(`/room/${id}`));
-        return;
-      }
       if (!mounted) return;
-      setUserId(user.id);
-      setName(displayName(user));
-
-      const res = await fetch(`/api/rooms/${id}`);
-      if (!res.ok) {
-        setError("Room not found");
-        setLoading(false);
-        return;
-      }
-      const r: Room = await res.json();
+      if (data.user) setUserId(data.user.id);
+      await refreshCurrentRoom();
       if (!mounted) return;
-      setRoom(r);
+      if (!getCurrentRoom()) {
+        // fallback: fetch directly
+        const res = await fetch(`/api/rooms/${id}`);
+        if (!res.ok) {
+          setError("Room not found");
+          setLoading(false);
+          return;
+        }
+      }
       setLoading(false);
-
-      cleanup = joinRoomChannel(id, user.id, displayName(user), (m) => {
-        if (mounted) setMembers(m);
-      });
     })();
-
     return () => {
       mounted = false;
-      if (cleanup) cleanup();
     };
-  }, [id, router]);
+  }, [id]);
 
   async function leave() {
     if (!id) return;
@@ -71,6 +52,7 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
     try {
       await fetch(`/api/rooms/${id}/leave`, { method: "POST" });
     } finally {
+      clearCurrentRoom();
       router.push("/room");
     }
   }
@@ -84,8 +66,7 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: targetUserId }),
       });
-      const res = await fetch(`/api/rooms/${id}`);
-      if (res.ok) setRoom(await res.json());
+      await refreshCurrentRoom();
     } finally {
       setBusy(false);
     }
@@ -102,19 +83,23 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
     );
   }
 
-  if (error || !room) {
-    return (
-      <main className="nm-screen min-h-dvh">
-        <div className="nm-container flex flex-col gap-6 pb-32 pt-5">
-          <AppHeader showBack />
-          <Notice variant="neumorphic" title={error ?? "Room not found"} />
-        </div>
-      </main>
-    );
+  if (error || !room || room.id !== id) {
+    // if store room not loaded yet, try direct fetch state
+    if (!room) {
+      return (
+        <main className="nm-screen min-h-dvh">
+          <div className="nm-container flex flex-col gap-6 pb-32 pt-5">
+            <AppHeader showBack />
+            <Notice variant="neumorphic" title={error ?? "Room not found"} />
+          </div>
+        </main>
+      );
+    }
   }
 
+  const r = room!;
   const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const joinUrl = `${origin}/room?code=${room.code}`;
+  const joinUrl = `${origin}/room?code=${r.code}`;
 
   return (
     <main className="nm-screen min-h-dvh">
@@ -122,7 +107,7 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
         <AppHeader showBack />
         <section className="nm-card nm-raised p-5">
           <p className="nm-eyebrow">Room code</p>
-          <p className="mt-2 text-3xl font-semibold tracking-widest nm-strong">{room.code}</p>
+          <p className="mt-2 text-3xl font-semibold tracking-widest nm-strong">{r.code}</p>
           <div className="mt-4 flex justify-center">
             <div className="nm-well nm-inset rounded-2xl p-3">
               <QRCodeSVG value={joinUrl} size={160} bgColor="transparent" fgColor="currentColor" />
@@ -138,8 +123,7 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
           </h2>
           <ul className="mt-3 flex flex-col gap-2">
             {members.map((m) => {
-              const isLeader = m.userId === room.leader_id;
-              const isSelf = m.userId === userId;
+              const isLeader = m.userId === r.leader_id;
               return (
                 <li
                   key={m.userId}
@@ -148,7 +132,6 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
                   <span className="min-w-0 flex-1">
                     <span className={`block truncate text-sm font-semibold ${isLeader ? "nm-accent" : "nm-strong"}`}>
                       {m.name}
-                      {isSelf && <span className="ml-1 text-xs nm-muted">(you)</span>}
                     </span>
                   </span>
                   {isLeader && (
@@ -156,7 +139,7 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
                       Leader
                     </span>
                   )}
-                  {room.isLeader && !isSelf && !isLeader && (
+                  {r.isLeader && m.userId !== userId && !isLeader && (
                     <button
                       type="button"
                       onClick={() => handoff(m.userId)}
