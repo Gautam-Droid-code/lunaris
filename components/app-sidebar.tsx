@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense } from "react";
-import { usePathname } from "next/navigation";
+import { Suspense, useTransition } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   BrowseIcon,
@@ -13,9 +13,10 @@ import {
   SettingsIcon,
 } from "@/components/icons";
 import { Logo } from "@/components/logo";
+import { signOut } from "@/app/login/actions";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { RoomNavLink } from "@/components/room-nav-link";
-import { useLibrary } from "@/lib/library-store";
+import { clearLibrary, useLibrary } from "@/lib/library-store";
 
 function NavItem({
   href,
@@ -48,8 +49,19 @@ function NavItem({
 }
 
 export function AppSidebar() {
+  const router = useRouter();
   const [expanded, setExpanded] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [signingOut, startSignOut] = useTransition();
   const { ready, user } = useLibrary();
+
+  function logOut() {
+    startSignOut(async () => {
+      await signOut();
+      clearLibrary();
+      router.push("/");
+    });
+  }
 
   return (
     <aside
@@ -89,28 +101,52 @@ export function AppSidebar() {
         <Suspense fallback={null}>
           <RoomNavLink />
         </Suspense>
-        <Link
-          href="/settings"
-          className="nm-nav-button nm-raised-sm flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium"
-        >
-          <SettingsIcon className="size-5" />
-          <span className={`${expanded ? "block" : "hidden"} md:hidden lg:block`}>
-            Settings
-          </span>
-          {expanded && <span className="hidden md:block lg:hidden">Settings</span>}
-        </Link>
-        {ready && user && (
-          <div className="flex items-center gap-2 px-3 py-2">
-            <span className="nm-inset grid size-8 shrink-0 place-items-center rounded-full">
-              <span className="text-xs nm-strong">{(user.email ?? "?").charAt(0).toUpperCase()}</span>
-            </span>
-            {expanded && (
-              <span className="hidden truncate text-xs nm-muted md:block lg:block">
-                {user.email}
+        {ready && user ? (
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-expanded={menuOpen}
+              aria-label="Account menu"
+              className="nm-nav-button nm-raised-sm flex items-center gap-2 rounded-2xl px-3 py-2 text-sm font-medium"
+            >
+              <span className="nm-inset grid size-8 shrink-0 place-items-center rounded-full">
+                <span className="text-xs nm-strong">{(user.email ?? "?").charAt(0).toUpperCase()}</span>
               </span>
+              {expanded && (
+                <span className="hidden truncate text-xs nm-muted md:block lg:block">
+                  {user.email}
+                </span>
+              )}
+            </button>
+            {menuOpen && (
+              <div className="nm-card nm-raised flex flex-col gap-1 p-2">
+                <Link
+                  href="/settings"
+                  className="nm-nav-button nm-raised-sm flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium"
+                >
+                  <SettingsIcon className="size-4" />
+                  <span>Settings</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={logOut}
+                  disabled={signingOut}
+                  className="nm-nav-button nm-raised-sm flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium nm-strong disabled:opacity-60"
+                >
+                  Log out
+                </button>
+              </div>
             )}
           </div>
-        )}
+        ) : ready ? (
+          <Link
+            href="/login"
+            className="nm-card nm-raised-sm inline-flex min-h-11 items-center justify-center rounded-2xl px-4 text-sm font-medium nm-strong"
+          >
+            Log in
+          </Link>
+        ) : null}
         <ThemeToggle />
       </div>
     </aside>
