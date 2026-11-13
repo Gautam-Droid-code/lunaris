@@ -26,6 +26,14 @@ const TIMESTAMP = /^\s*\[(\d{1,2}):(\d{2})(?:[.:](\d{1,3}))?\]\s?/;
 
 /** Accepts both plain lyrics and LRC/timed-line payloads. */
 function toDisplayLyrics(lyrics: Lyrics | null): { lines: DisplayLyric[]; synced: boolean } {
+  // Prefer parsed LRC lines from LRCLIB when available.
+  if (lyrics?.lines && lyrics.lines.length > 0) {
+    const lines = lyrics.lines
+      .map((line) => ({ time: line.timeMs / 1000, text: line.text.trim() }))
+      .filter((line) => line.text.length > 0);
+    return { lines, synced: true };
+  }
+
   const raw = lyrics?.lyrics;
   if (!raw) return { lines: [], synced: false };
 

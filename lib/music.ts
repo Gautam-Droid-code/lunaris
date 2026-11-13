@@ -95,6 +95,8 @@ export type Lyrics = {
   videoId: string;
   /** Plain text, or timed lines when the service can provide them. */
   lyrics: string | TimedLyricLine[] | null;
+  /** Parsed LRC lines (timeMs + text) when a synced source is available. */
+  lines?: { timeMs: number; text: string }[];
   source: string | null;
   hasTimestamps: boolean;
 };
