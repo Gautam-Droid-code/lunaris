@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
 import { GroupIcon, LeaveIcon } from "@/components/icons";
 import { clearCurrentRoom, useCurrentRoom } from "@/lib/room-store";
 
 export function RoomNavLink() {
+  const router = useRouter();
   const pathname = usePathname();
   const { room } = useCurrentRoom();
   const [confirming, setConfirming] = useState(false);
@@ -24,6 +25,9 @@ export function RoomNavLink() {
       clearCurrentRoom();
       setBusy(false);
       setConfirming(false);
+      if (pathname.startsWith("/room")) {
+        router.push("/browse");
+      }
     }
   }
 
