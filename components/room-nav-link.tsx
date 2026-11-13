@@ -13,7 +13,17 @@ export function RoomNavLink() {
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
 
-  if (!room) return null;
+  if (!room) {
+    return (
+      <Link
+        href="/room"
+        aria-label="Group listening"
+        className="nm-nav-button nm-raised-sm size-11"
+      >
+        <GroupIcon />
+      </Link>
+    );
+  }
 
   const active = pathname === `/room/${room.id}` || pathname.startsWith(`/room/${room.id}/`);
 
