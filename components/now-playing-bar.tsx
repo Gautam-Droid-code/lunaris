@@ -19,7 +19,7 @@ export function NowPlayingBar() {
   const title = track.title ?? "Untitled";
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-10 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+    <div className="fixed inset-x-0 bottom-16 z-10 px-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] lg:bottom-0">
       <div className="nm-mini-player nm-raised-sm mx-auto flex max-w-2xl items-center gap-2 p-2 pr-3">
         <Link
           href={`/now-playing/${track.videoId}`}

@@ -57,6 +57,20 @@ export const ListIcon = (p: IconProps) => (
     <path d="M4 6h16M4 12h16M4 18h10" />
   </Icon>
 );
+export const HomeIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 10.5 12 3l9 7.5" />
+    <path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5" />
+  </Icon>
+);
+export const BrowseIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="3" width="7" height="7" rx="1.5" />
+    <rect x="14" y="3" width="7" height="7" rx="1.5" />
+    <rect x="3" y="14" width="7" height="7" rx="1.5" />
+    <rect x="14" y="14" width="7" height="7" rx="1.5" />
+  </Icon>
+);
 export const GroupIcon = (p: IconProps) => (
   <Icon {...p}>
     <circle cx="9" cy="8" r="3" />

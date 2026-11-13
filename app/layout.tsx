@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Suspense } from "react";
+import { AppSidebar } from "@/components/app-sidebar";
+import { BottomNav } from "@/components/bottom-nav";
 import { NowPlayingBar } from "@/components/now-playing-bar";
 import { PlayerProvider } from "@/components/player-provider";
 import { RoomPresence } from "@/components/room-presence";
@@ -33,7 +35,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-dvh font-sans">
         <PlayerProvider>
           <RoomPresence />
-          {children}
+          <div className="flex min-h-dvh">
+            <Suspense fallback={null}>
+              <AppSidebar />
+            </Suspense>
+            <div className="min-w-0 flex-1">{children}</div>
+          </div>
+          <Suspense fallback={null}>
+            <BottomNav />
+          </Suspense>
           <Suspense>
             <NowPlayingBar />
           </Suspense>
