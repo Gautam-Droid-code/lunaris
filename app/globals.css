@@ -14,8 +14,8 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #1a1a1a;
-  --surface: #1a1a1a;
+  --bg: #1b1b21;
+  --surface: #1b1b21;
   --text: #f1eee8;
   --text-muted: #aaa59c;
   --accent: #dda583;
@@ -52,6 +52,10 @@ body {
 
 .track-title {
   text-transform: lowercase;
+}
+
+h1, h2 {
+  letter-spacing: -0.02em;
 }
 
 .album-art {

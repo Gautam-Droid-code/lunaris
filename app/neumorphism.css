@@ -25,14 +25,17 @@
   --nm-duration: 240ms;
   --nm-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* Dark palette (default). These are the player's current dark values. */
-  --nm-bg: #2b2f36;
-  --nm-shadow-dark: #1e2127;
-  --nm-shadow-light: #383d46;
-  --nm-text: #b7bfca;
-  --nm-text-strong: #f0f3f8;
-  /* The player's current dark accent; light uses the shared #6d7cff. */
-  --nm-accent: #8f9bff;
+  /* Dark palette (default) — neo + purple. */
+  --nm-bg: #1b1b21;
+  --nm-shadow-dark: rgba(0, 0, 0, 0.55);
+  --nm-shadow-light: rgba(255, 255, 255, 0.05);
+  --nm-text: #9696a4;
+  --nm-text-strong: #ececf4;
+  --nm-text-faint: #6b6b78;
+  --nm-accent: #b9a3ff;
+  --nm-accent-deep: #8e78e6;
+  --nm-glow: rgba(142, 120, 230, 0.45);
+  --nm-glow-strong: rgba(185, 163, 255, 0.8);
 }
 
 :root[data-theme="light"] {
@@ -42,7 +45,12 @@
   /* Kept from the player's existing light palette. */
   --nm-text: #4b5563;
   --nm-text-strong: #2d3748;
-  --nm-accent: #6d7cff;
+  --nm-text-faint: #6b7280;
+  /* Purple family accent for light theme. */
+  --nm-accent: #8e78e6;
+  --nm-accent-deep: #6d5fd1;
+  --nm-glow: rgba(142, 120, 230, 0.3);
+  --nm-glow-strong: rgba(185, 163, 255, 0.6);
 }
 
 /*
@@ -52,20 +60,16 @@
  *   --nm-blur-scale   (multiplies --nm-blur)
  */
 .nm-raised {
-  --nm-d: calc(var(--nm-distance) * var(--nm-depth-scale, 1));
-  --nm-b: calc(var(--nm-blur) * var(--nm-blur-scale, 1));
   box-shadow:
-    var(--nm-d) var(--nm-d) var(--nm-b) var(--nm-shadow-dark),
-    calc(-1 * var(--nm-d)) calc(-1 * var(--nm-d)) var(--nm-b) var(--nm-shadow-light);
+    -6px -6px 12px var(--nm-shadow-light),
+    6px 6px 14px var(--nm-shadow-dark);
 }
 
 /* Inset well: the same light source, pressed into the surface. */
 .nm-inset {
-  --nm-d: calc(var(--nm-distance) * var(--nm-depth-scale, 1));
-  --nm-b: calc(var(--nm-blur) * var(--nm-blur-scale, 1));
   box-shadow:
-    inset var(--nm-d) var(--nm-d) var(--nm-b) var(--nm-shadow-dark),
-    inset calc(-1 * var(--nm-d)) calc(-1 * var(--nm-d)) var(--nm-b) var(--nm-shadow-light);
+    inset 5px 5px 10px var(--nm-shadow-dark),
+    inset -5px -5px 10px var(--nm-shadow-light);
 }
 
 /*
@@ -73,12 +77,10 @@
  * component's own accent marker) for the active colour cue.
  */
 .nm-pressed {
-  --nm-d: calc(var(--nm-distance) * var(--nm-press-scale, 1));
-  --nm-b: calc(var(--nm-blur) * var(--nm-press-scale, 1));
   background: var(--nm-bg);
   box-shadow:
-    inset var(--nm-d) var(--nm-d) var(--nm-b) var(--nm-shadow-dark),
-    inset calc(-1 * var(--nm-d)) calc(-1 * var(--nm-d)) var(--nm-b) var(--nm-shadow-light);
+    inset 5px 5px 10px var(--nm-shadow-dark),
+    inset -5px -5px 10px var(--nm-shadow-light);
   color: var(--nm-text-strong);
 }
 
