@@ -107,6 +107,14 @@ export async function refreshCurrentRoom() {
   }
 }
 
+export async function leaveRoom(roomId: string) {
+  try {
+    await fetch(`/api/rooms/${roomId}/leave`, { method: "POST" });
+  } finally {
+    clearCurrentRoom();
+  }
+}
+
 export function clearCurrentRoom() {
   if (heartbeat) {
     clearInterval(heartbeat);

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useTransition } from "react";
+import { useTransition } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
 import {
@@ -11,11 +11,13 @@ import {
   LibraryIcon,
   SearchIcon,
   SettingsIcon,
+  GroupIcon,
+  LeaveIcon,
 } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { signOut } from "@/app/login/actions";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { RoomNavLink } from "@/components/room-nav-link";
+import { useCurrentRoom, leaveRoom } from "@/lib/room-store";
 import { clearLibrary, useLibrary } from "@/lib/library-store";
 
 function NavItem({
@@ -47,6 +49,84 @@ function NavItem({
       </span>
       {expanded && <span className="hidden md:block lg:hidden">{label}</span>}
     </Link>
+  );
+}
+
+function GroupRow({ expanded }: { expanded: boolean }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { room } = useCurrentRoom();
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const href = room ? `/room/${room.id}` : "/room";
+  const active = room
+    ? pathname === href || pathname.startsWith(href + "/")
+    : pathname === "/room";
+
+  async function leave() {
+    if (!room) return;
+    setBusy(true);
+    try {
+      await leaveRoom(room.id);
+    } finally {
+      setBusy(false);
+      setConfirming(false);
+      if (pathname.startsWith("/room")) router.push("/browse");
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <Link
+        href={href}
+        aria-current={active ? "page" : undefined}
+        className={`nm-nav-button flex flex-1 items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium transition-colors ${
+          active ? "nm-pressed-sm nm-accent" : "nm-raised-sm"
+        }`}
+      >
+        <span className={`grid size-5 shrink-0 place-items-center ${active ? "nm-accent nm-nav-glow" : ""}`}>
+          <GroupIcon className="size-5" />
+        </span>
+        <span className={`${expanded ? "block" : "hidden"} md:hidden lg:block`}>
+          Group
+        </span>
+        {expanded && <span className="hidden md:block lg:hidden">Group</span>}
+        {room && <span className="ml-auto size-2 shrink-0 rounded-full bg-[var(--nm-accent)]" />}
+      </Link>
+      {room && (
+        confirming ? (
+          <>
+            <button
+              type="button"
+              onClick={leave}
+              disabled={busy}
+              aria-label="Confirm leave"
+              className="nm-nav-button nm-raised-sm grid size-8 place-items-center nm-accent"
+            >
+              ✓
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirming(false)}
+              aria-label="Cancel leave"
+              className="nm-nav-button nm-raised-sm grid size-8 place-items-center text-xs nm-muted"
+            >
+              ✕
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setConfirming(true)}
+            aria-label="Leave room"
+            className="nm-nav-button nm-raised-sm grid size-8 place-items-center nm-muted"
+          >
+            <LeaveIcon className="size-4" />
+          </button>
+        )
+      )}
+    </div>
   );
 }
 
@@ -89,12 +169,7 @@ export function AppSidebar() {
         <NavItem href="/" label="Listen Now" icon={<HomeIcon className="size-5" />} expanded={expanded} />
         <NavItem href="/browse" label="Browse" icon={<BrowseIcon className="size-5" />} expanded={expanded} />
         <NavItem href="/search" label="Search" icon={<SearchIcon className="size-5" />} expanded={expanded} />
-        <div className="flex items-center gap-2">
-          <Suspense fallback={null}>
-            <RoomNavLink />
-          </Suspense>
-          {expanded && <span className="text-sm font-medium nm-strong">Group</span>}
-        </div>
+        <GroupRow expanded={expanded} />
       </nav>
 
       <div className="flex flex-col gap-1">

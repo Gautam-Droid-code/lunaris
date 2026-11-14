@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
 import { GroupIcon, LeaveIcon } from "@/components/icons";
-import { clearCurrentRoom, useCurrentRoom } from "@/lib/room-store";
+import { leaveRoom, useCurrentRoom } from "@/lib/room-store";
 
 export function RoomNavLink() {
   const router = useRouter();
@@ -28,11 +28,11 @@ export function RoomNavLink() {
   const active = pathname === `/room/${room.id}` || pathname.startsWith(`/room/${room.id}/`);
 
   async function leave() {
+    if (!room) return;
     setBusy(true);
     try {
-      await fetch(`/api/rooms/${room!.id}/leave`, { method: "POST" });
+      await leaveRoom(room.id);
     } finally {
-      clearCurrentRoom();
       setBusy(false);
       setConfirming(false);
       if (pathname.startsWith("/room")) {
