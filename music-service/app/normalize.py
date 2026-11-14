@@ -62,6 +62,17 @@ def tracks(items: list[Raw] | None) -> list[Raw]:
     return [track(item) for item in items or [] if item.get("videoId")]
 
 
+def song_from_watch(raw: Raw, video_id: str) -> Raw | None:
+    """Build a song payload from a watch-playlist response, used when the
+    player endpoint (get_song) is blocked (common from datacenter IPs)."""
+    items = tracks(raw.get("tracks"))
+    chosen = next((t for t in items if t.get("videoId") == video_id), None)
+    chosen = chosen or (items[0] if items else None)
+    if not chosen:
+        return None
+    return {**chosen, "viewCount": None, "playable": True}
+
+
 def album_summary(item: Raw) -> Raw:
     browse_id = item.get("browseId")
     return {

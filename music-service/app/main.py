@@ -76,10 +76,20 @@ def search_suggestions(q: Annotated[str, Query(min_length=1)]):
 
 @app.get("/song/{video_id}")
 def song(video_id: str):
-    raw = call(yt().get_song, video_id)
-    if not raw.get("videoDetails"):
-        raise HTTPException(status_code=404, detail="Song not found")
-    return normalize.song(raw)
+    raw = None
+    try:
+        raw = yt().get_song(video_id)
+    except Exception:
+        raw = None
+    if raw and raw.get("videoDetails"):
+        return normalize.song(raw)
+    # Player endpoint blocked or empty (common from datacenter IPs such as
+    # Vercel): fall back to the watch playlist, which carries the same metadata.
+    watch = call(yt().get_watch_playlist, videoId=video_id, limit=1)
+    fallback = normalize.song_from_watch(watch, video_id)
+    if fallback:
+        return fallback
+    raise HTTPException(status_code=404, detail="Song not found")
 
 
 @app.get("/album/{browse_id}")
