@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 import { Cover } from "@/components/cover";
 import {
   MoreIcon,
@@ -181,8 +183,16 @@ function PlayerCard({
   } = usePlayer();
   const repeatLabel = { off: "Repeat off", all: "Repeat all", one: "Repeat one" }[repeat];
 
+  const cardRef = useRef<HTMLElement>(null);
+  useGSAP(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (cardRef.current) {
+      gsap.from(cardRef.current, { y: 40, opacity: 0, duration: 0.5, ease: "back.out(1.2)", clearProps: "all" });
+    }
+  }, { scope: cardRef });
+
   return (
-    <section className={`nm-card nm-raised p-4 sm:p-5`} aria-label="Player">
+    <section ref={cardRef} className={`nm-card nm-raised p-4 sm:p-5`} aria-label="Player">
       <div className="flex items-center gap-4">
         <div className="w-28 shrink-0">
           <div className="nm-video-well nm-inset nm-glow-pulse">
@@ -321,7 +331,6 @@ function LyricsPanel({ videoId }: { videoId: string }) {
   const { currentTime } = usePlayer();
   const [lyrics, setLyrics] = useState<Lyrics | null | "failed" | "loading">("loading");
   const scrollRef = useRef<HTMLDivElement>(null);
-  const activeLineRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -351,6 +360,18 @@ function LyricsPanel({ videoId }: { videoId: string }) {
     }
     return active;
   }, [parsed, currentTime]);
+
+  const activeLineRef = useRef<HTMLParagraphElement>(null);
+  useGSAP(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (activeLineRef.current) {
+      gsap.fromTo(
+        activeLineRef.current,
+        { opacity: 0.6 },
+        { opacity: 1, duration: 0.4, ease: "power2.out", clearProps: "opacity" },
+      );
+    }
+  }, { scope: activeLineRef, dependencies: [activeIndex] });
 
   useEffect(() => {
     if (activeIndex < 0) return;

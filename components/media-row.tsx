@@ -1,4 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 import { Cover } from "@/components/cover";
 import type { Thumbnail } from "@/lib/music";
 
@@ -124,11 +129,24 @@ export function MediaRow({
   variant?: "cards" | "rows";
   neumorphic?: boolean;
 }) {
+  const containerRef = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const items = containerRef.current?.querySelectorAll("li");
+      if (items && items.length) {
+        gsap.from(items, { y: 16, opacity: 0, stagger: 0.06, ease: "power3.out", duration: 0.4, clearProps: "all" });
+      }
+    },
+    { scope: containerRef, dependencies: [items.length] },
+  );
+
   if (items.length === 0) return null;
 
   if (variant === "rows") {
     return (
-      <section>
+      <section ref={containerRef}>
         <h2 className="mb-2 text-lg font-semibold tracking-tight nm-strong">{title}</h2>
         <ul className="flex flex-col gap-2 md:grid md:grid-cols-2 md:gap-2">
           {items.map((item) => (
@@ -142,7 +160,7 @@ export function MediaRow({
   }
 
   return (
-    <section>
+    <section ref={containerRef}>
       <h2 className={`text-lg font-semibold tracking-tight ${neumorphic ? "nm-strong" : ""}`}>
         {title}
       </h2>

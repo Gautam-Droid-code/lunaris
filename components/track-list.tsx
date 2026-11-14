@@ -1,5 +1,8 @@
 "use client";
 
+import { useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 import { Cover } from "@/components/cover";
 import { MoreIcon, PlayIcon } from "@/components/icons";
 import { usePlayer } from "@/components/player-provider";
@@ -26,12 +29,31 @@ export function TrackList({
   variant?: "default" | "neumorphic" | "chart";
 }) {
   const { currentTrack, playTrack } = usePlayer();
+  const listRef = useRef<HTMLOListElement>(null);
   const chart = variant === "chart";
+
+  useGSAP(
+    () => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const rows = listRef.current?.querySelectorAll(":scope > li");
+      if (rows && rows.length) {
+        gsap.from(rows, {
+          y: 16,
+          opacity: 0,
+          stagger: 0.06,
+          ease: "power3.out",
+          duration: 0.4,
+          clearProps: "all",
+        });
+      }
+    },
+    { scope: listRef, dependencies: [tracks.length] },
+  );
   const neumorphic = variant === "neumorphic";
   const softRows = chart || neumorphic;
 
   return (
-    <ol className={neumorphic ? "flex flex-col gap-2" : "flex flex-col gap-1"}>
+    <ol ref={listRef} className={neumorphic ? "flex flex-col gap-2" : "flex flex-col gap-1"}>
       {tracks.map((track, index) => {
         const isCurrent = track.videoId === currentTrack?.videoId;
         return (
