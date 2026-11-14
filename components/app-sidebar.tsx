@@ -6,13 +6,13 @@ import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   BrowseIcon,
+  GroupIcon,
   HeartIcon,
   HomeIcon,
+  LeaveIcon,
   LibraryIcon,
   SearchIcon,
   SettingsIcon,
-  GroupIcon,
-  LeaveIcon,
 } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { signOut } from "@/app/login/actions";
@@ -20,39 +20,37 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { useCurrentRoom, leaveRoom } from "@/lib/room-store";
 import { clearLibrary, useLibrary } from "@/lib/library-store";
 
-function NavItem({
-  href,
-  label,
-  icon,
-  expanded,
-}: {
-  href: string;
-  label: string;
-  icon: React.ReactNode;
-  expanded: boolean;
-}) {
+function NavItem({ href, label, icon }: { href: string; label: string; icon: React.ReactNode }) {
   const pathname = usePathname();
   const active = pathname === href || pathname.startsWith(href + "/");
   return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={`nm-nav-button flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium transition-colors ${
-        active ? "nm-pressed-sm nm-accent" : "nm-raised-sm"
-      }`}
-    >
-      <span className={`grid size-5 shrink-0 place-items-center ${active ? "nm-accent nm-nav-glow" : ""}`}>
+    <div className="group relative">
+      <Link
+        href={href}
+        aria-label={label}
+        aria-current={active ? "page" : undefined}
+        style={
+          active
+            ? { background: "linear-gradient(135deg, var(--nm-accent), var(--nm-accent-deep))", color: "#1b1b21" }
+            : undefined
+        }
+        className={`nm-nav-button grid size-12 place-items-center rounded-full transition-transform duration-200 ${
+          active ? "" : "nm-raised-sm"
+        }`}
+      >
         {icon}
-      </span>
-      <span className={`${expanded ? "block" : "hidden"} md:hidden lg:block`}>
+      </Link>
+      <span
+        className="pointer-events-none absolute left-full top-1/2 z-30 ml-2 -translate-y-1/2 translate-x-2 rounded-2xl px-3 py-1.5 text-xs font-medium opacity-0 transition-all duration-[250ms] ease-out group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:translate-x-0 group-focus-within:opacity-100 motion-reduce:translate-x-0 motion-reduce:transition-none nm-card nm-raised-sm"
+        aria-hidden="true"
+      >
         {label}
       </span>
-      {expanded && <span className="hidden md:block lg:hidden">{label}</span>}
-    </Link>
+    </div>
   );
 }
 
-function GroupRow({ expanded }: { expanded: boolean }) {
+function GroupRow() {
   const router = useRouter();
   const pathname = usePathname();
   const { room } = useCurrentRoom();
@@ -77,54 +75,62 @@ function GroupRow({ expanded }: { expanded: boolean }) {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="group relative">
       <Link
         href={href}
+        aria-label="Group listening"
         aria-current={active ? "page" : undefined}
-        className={`nm-nav-button flex flex-1 items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium transition-colors ${
-          active ? "nm-pressed-sm nm-accent" : "nm-raised-sm"
+        style={
+          active
+            ? { background: "linear-gradient(135deg, var(--nm-accent), var(--nm-accent-deep))", color: "#1b1b21" }
+            : undefined
+        }
+        className={`nm-nav-button grid size-12 place-items-center rounded-full transition-transform duration-200 ${
+          active ? "" : "nm-raised-sm"
         }`}
       >
-        <span className={`grid size-5 shrink-0 place-items-center ${active ? "nm-accent nm-nav-glow" : ""}`}>
-          <GroupIcon className="size-5" />
-        </span>
-        <span className={`${expanded ? "block" : "hidden"} md:hidden lg:block`}>
-          Group
-        </span>
-        {expanded && <span className="hidden md:block lg:hidden">Group</span>}
-        {room && <span className="ml-auto size-2 shrink-0 rounded-full bg-[var(--nm-accent)]" />}
+        <GroupIcon className="size-5" />
+        {room && <span className="absolute right-1 top-1 size-2 rounded-full bg-[#1b1b21]" />}
       </Link>
+      <span
+        className="pointer-events-none absolute left-full top-1/2 z-30 ml-2 -translate-y-1/2 translate-x-2 rounded-2xl px-3 py-1.5 text-xs font-medium opacity-0 transition-all duration-[250ms] ease-out group-hover:translate-x-0 group-hover:opacity-100 group-focus-within:translate-x-0 group-focus-within:opacity-100 motion-reduce:translate-x-0 motion-reduce:transition-none nm-card nm-raised-sm"
+        aria-hidden="true"
+      >
+        Group
+      </span>
       {room && (
-        confirming ? (
-          <>
+        <div className="mt-1 flex justify-center">
+          {confirming ? (
+            <div className="flex gap-1">
+              <button
+                type="button"
+                onClick={leave}
+                disabled={busy}
+                aria-label="Confirm leave"
+                className="nm-nav-button nm-raised-sm grid size-7 place-items-center nm-accent"
+              >
+                ✓
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirming(false)}
+                aria-label="Cancel leave"
+                className="nm-nav-button nm-raised-sm grid size-7 place-items-center text-xs nm-muted"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
             <button
               type="button"
-              onClick={leave}
-              disabled={busy}
-              aria-label="Confirm leave"
-              className="nm-nav-button nm-raised-sm grid size-8 place-items-center nm-accent"
+              onClick={() => setConfirming(true)}
+              aria-label="Leave room"
+              className="nm-nav-button nm-raised-sm grid size-7 place-items-center nm-muted"
             >
-              ✓
+              <LeaveIcon className="size-3.5" />
             </button>
-            <button
-              type="button"
-              onClick={() => setConfirming(false)}
-              aria-label="Cancel leave"
-              className="nm-nav-button nm-raised-sm grid size-8 place-items-center text-xs nm-muted"
-            >
-              ✕
-            </button>
-          </>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setConfirming(true)}
-            aria-label="Leave room"
-            className="nm-nav-button nm-raised-sm grid size-8 place-items-center nm-muted"
-          >
-            <LeaveIcon className="size-4" />
-          </button>
-        )
+          )}
+        </div>
       )}
     </div>
   );
@@ -132,7 +138,6 @@ function GroupRow({ expanded }: { expanded: boolean }) {
 
 export function AppSidebar() {
   const router = useRouter();
-  const [expanded, setExpanded] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [signingOut, startSignOut] = useTransition();
   const { ready, user } = useLibrary();
@@ -146,65 +151,35 @@ export function AppSidebar() {
   }
 
   return (
-    <aside
-      className={`hidden shrink-0 flex-col gap-4 p-3 md:flex md:w-16 lg:w-[250px] ${
-        expanded ? "md:w-[250px]" : ""
-      }`}
-    >
-      <div className="flex items-center justify-between">
-        <Link href="/" aria-label="Lunaris home" className="inline-flex items-center">
-          <Logo variant={expanded ? "full" : "mark"} size={32} />
-        </Link>
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          aria-label="Toggle sidebar"
-          className="nm-nav-button nm-raised-sm grid size-8 place-items-center md:inline-flex lg:hidden"
-        >
-          {expanded ? "‹" : "›"}
-        </button>
-      </div>
-
-      <nav className="flex flex-col gap-1">
-        <NavItem href="/" label="Listen Now" icon={<HomeIcon className="size-5" />} expanded={expanded} />
-        <NavItem href="/browse" label="Browse" icon={<BrowseIcon className="size-5" />} expanded={expanded} />
-        <NavItem href="/search" label="Search" icon={<SearchIcon className="size-5" />} expanded={expanded} />
-        <GroupRow expanded={expanded} />
+    <aside className="hidden shrink-0 flex-col items-center gap-3 p-3 md:flex md:w-[72px]">
+      <Link href="/" aria-label="Lunaris home" className="inline-flex items-center">
+        <Logo variant="mark" size={32} />
+      </Link>
+      <nav className="flex flex-col items-center gap-2">
+        <NavItem href="/" label="Listen Now" icon={<HomeIcon className="size-5" />} />
+        <NavItem href="/browse" label="Browse" icon={<BrowseIcon className="size-5" />} />
+        <NavItem href="/search" label="Search" icon={<SearchIcon className="size-5" />} />
+        <GroupRow />
       </nav>
-
-      <div className="flex flex-col gap-1">
-        <p className={`px-3 text-xs font-semibold uppercase tracking-wider nm-muted ${expanded ? "block" : "hidden md:hidden lg:block"}`}>
-          Your Library
-        </p>
-        <NavItem href="/library" label="Playlists" icon={<LibraryIcon className="size-5" />} expanded={expanded} />
-        <NavItem href="/library#liked-songs" label="Favorite Songs" icon={<HeartIcon className="size-5" />} expanded={expanded} />
+      <div className="flex flex-col items-center gap-2">
+        <NavItem href="/library" label="Playlists" icon={<LibraryIcon className="size-5" />} />
+        <NavItem href="/library#liked-songs" label="Favorite Songs" icon={<HeartIcon className="size-5" />} />
       </div>
-
-      <div className="mt-auto flex flex-col gap-2">
+      <div className="mt-auto flex flex-col items-center gap-2">
         {ready && user ? (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col items-center gap-2">
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
               aria-expanded={menuOpen}
               aria-label="Account menu"
-              className="nm-nav-button nm-raised-sm flex items-center gap-2 rounded-2xl px-3 py-2 text-sm font-medium"
+              className="nm-nav-button nm-raised-sm grid size-10 place-items-center"
             >
-              <span className="nm-inset grid size-8 shrink-0 place-items-center rounded-full">
-                <span className="text-xs nm-strong">{(user.email ?? "?").charAt(0).toUpperCase()}</span>
-              </span>
-              {expanded && (
-                <span className="hidden truncate text-xs nm-muted md:block lg:block">
-                  {user.email}
-                </span>
-              )}
+              <span className="text-xs nm-strong">{(user.email ?? "?").charAt(0).toUpperCase()}</span>
             </button>
             {menuOpen && (
               <div className="nm-card nm-raised flex flex-col gap-1 p-2">
-                <Link
-                  href="/settings"
-                  className="nm-nav-button nm-raised-sm flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium"
-                >
+                <Link href="/settings" className="nm-nav-button nm-raised-sm flex items-center gap-2 rounded-2xl px-3 py-2 text-xs font-medium">
                   <SettingsIcon className="size-4" />
                   <span>Settings</span>
                 </Link>
@@ -212,7 +187,7 @@ export function AppSidebar() {
                   type="button"
                   onClick={logOut}
                   disabled={signingOut}
-                  className="nm-nav-button nm-raised-sm flex items-center gap-3 rounded-2xl px-3 py-2 text-sm font-medium nm-strong disabled:opacity-60"
+                  className="nm-nav-button nm-raised-sm flex items-center gap-2 rounded-2xl px-3 py-2 text-xs font-medium nm-strong disabled:opacity-60"
                 >
                   Log out
                 </button>
@@ -220,11 +195,8 @@ export function AppSidebar() {
             )}
           </div>
         ) : ready ? (
-          <Link
-            href="/login"
-            className="nm-card nm-raised-sm inline-flex min-h-11 items-center justify-center rounded-2xl px-4 text-sm font-medium nm-strong"
-          >
-            Log in
+          <Link href="/login" aria-label="Log in" className="nm-nav-button nm-raised-sm grid size-10 place-items-center">
+            <span className="text-xs nm-strong">in</span>
           </Link>
         ) : null}
         <ThemeToggle />
