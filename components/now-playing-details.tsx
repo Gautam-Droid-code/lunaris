@@ -17,6 +17,8 @@ import {
 } from "@/components/icons";
 import { LikeButton } from "@/components/like-button";
 import { PlayButton } from "@/components/play-button";
+import { useCurrentRoom } from "@/lib/room-store";
+import { useRoomSync } from "@/lib/room-sync";
 import { PlayerSlot, player, usePlayer } from "@/components/player-provider";
 import { artistNames, clockTime } from "@/lib/format";
 import { openTrackMenu } from "@/lib/library-store";
@@ -181,6 +183,9 @@ function PlayerCard({
     prev,
     next,
   } = usePlayer();
+  const { room } = useCurrentRoom();
+  const { needsTap, unlock, isLeader } = useRoomSync();
+  const isFollower = !!room && !isLeader;
   const repeatLabel = { off: "Repeat off", all: "Repeat all", one: "Repeat one" }[repeat];
 
   const cardRef = useRef<HTMLElement>(null);
@@ -240,30 +245,45 @@ function PlayerCard({
         <SeekBar />
       </div>
 
-      <div className="mt-4 flex items-center justify-center gap-5">
-        <button
-          type="button"
-          onClick={prev}
-          disabled={!currentTrack}
-          aria-label="Previous track"
-          className={`nm-icon-button nm-raised grid size-11 place-items-center`}
-        >
-          <PrevIcon className="size-4" />
-        </button>
-        <PlayButton
-          className={`nm-play-disc nm-raised grid size-20 place-items-center`}
-          iconClassName="size-7"
-        />
-        <button
-          type="button"
-          onClick={next}
-          disabled={!currentTrack}
-          aria-label="Next track"
-          className={`nm-icon-button nm-raised grid size-11 place-items-center`}
-        >
-          <NextIcon className="size-4" />
-        </button>
-      </div>
+      {isFollower && needsTap ? (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={unlock}
+            className="nm-card nm-raised grid min-h-12 place-items-center rounded-2xl px-6 text-sm font-medium nm-strong"
+          >
+            Tap to join the session
+          </button>
+        </div>
+      ) : (
+        <div className="mt-4 flex items-center justify-center gap-5">
+          <button
+            type="button"
+            onClick={prev}
+            disabled={!currentTrack || isFollower}
+            aria-label="Previous track"
+            className={`nm-icon-button nm-raised grid size-11 place-items-center ${isFollower ? "opacity-50" : ""}`}
+          >
+            <PrevIcon className="size-4" />
+          </button>
+          <PlayButton
+            className={`nm-play-disc nm-raised grid size-20 place-items-center ${isFollower ? "opacity-50" : ""}`}
+            iconClassName="size-7"
+          />
+          <button
+            type="button"
+            onClick={next}
+            disabled={!currentTrack || isFollower}
+            aria-label="Next track"
+            className={`nm-icon-button nm-raised grid size-11 place-items-center ${isFollower ? "opacity-50" : ""}`}
+          >
+            <NextIcon className="size-4" />
+          </button>
+        </div>
+      )}
+      {isFollower && (
+        <p className="mt-2 text-center text-xs nm-muted">Listening in sync</p>
+      )}
 
       <div className="mt-4 flex items-center justify-between gap-2">
         <button

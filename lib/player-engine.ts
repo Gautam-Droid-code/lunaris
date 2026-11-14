@@ -13,6 +13,7 @@ export type PlayerState = {
   shuffle: boolean;
   repeat: Repeat;
   notice: string | null;
+  followMode: boolean;
 };
 
 /** The parts of a video player the engine needs. YouTube implements this in the browser. */
@@ -50,6 +51,7 @@ export const initialState: PlayerState = {
   shuffle: false,
   repeat: "off",
   notice: null,
+  followMode: false,
 };
 
 function shuffled<T>(items: T[]): T[] {
@@ -236,6 +238,7 @@ export function createPlayer(
     },
 
     playTrack(track: Track, queue?: Track[]) {
+      if (state.followMode) return;
       const isCurrent = state.currentTrack?.videoId === track.videoId;
       if (isCurrent && !queue) {
         if (!state.isPlaying) backend?.play();
@@ -270,16 +273,19 @@ export function createPlayer(
     },
 
     togglePlay() {
+      if (state.followMode) return;
       if (!state.currentTrack) return;
       if (state.isPlaying) backend?.pause();
       else backend?.play();
     },
 
     next() {
+      if (state.followMode) return;
       if (state.currentTrack) void advance();
     },
 
     prev() {
+      if (state.followMode) return;
       if (!state.currentTrack) return;
       if (state.currentTime > RESTART_AFTER_SECONDS || state.index <= 0) {
         backend?.seek(0);
@@ -290,6 +296,7 @@ export function createPlayer(
     },
 
     seek(seconds: number) {
+      if (state.followMode) return;
       const currentTime = Math.max(0, seconds);
       backend?.seek(currentTime);
       update({ currentTime });
@@ -325,6 +332,34 @@ export function createPlayer(
       const next = (REPEAT_ORDER.indexOf(state.repeat) + 1) % REPEAT_ORDER.length;
       update({ repeat: REPEAT_ORDER[next] });
       if (state.currentTrack) extendIfNearEnd();
+    },
+
+    setFollowMode(on: boolean) {
+      update({ followMode: on });
+    },
+
+    remoteLoad(track: Track) {
+      if (!track) return;
+      queueVersion += 1;
+      unshuffledQueue = null;
+      skips = 0;
+      update({ queue: [track], index: 0, currentTrack: track, currentTime: 0, duration: track.durationSeconds ?? 0 });
+      if (backend) backend.load(track.videoId);
+      else pendingVideoId = track.videoId;
+    },
+
+    remotePlay() {
+      backend?.play();
+    },
+
+    remotePause() {
+      backend?.pause();
+    },
+
+    remoteSeek(seconds: number) {
+      const currentTime = Math.max(0, seconds);
+      backend?.seek(currentTime);
+      update({ currentTime });
     },
 
     /** Jump playback to the track at the given queue index. */

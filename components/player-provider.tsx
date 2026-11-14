@@ -39,6 +39,11 @@ type PlayerActions = Pick<
   | "removeFromQueue"
   | "reorderQueue"
   | "clearQueue"
+  | "setFollowMode"
+  | "remoteLoad"
+  | "remotePlay"
+  | "remotePause"
+  | "remoteSeek"
 >;
 
 const actions: PlayerActions = {
@@ -50,6 +55,11 @@ const actions: PlayerActions = {
   setVolume: player.setVolume,
   toggleShuffle: player.toggleShuffle,
   toggleRepeat: player.toggleRepeat,
+  setFollowMode: player.setFollowMode,
+  remoteLoad: player.remoteLoad,
+  remotePlay: player.remotePlay,
+  remotePause: player.remotePause,
+  remoteSeek: player.remoteSeek,
   jumpTo: player.jumpTo,
   removeFromQueue: player.removeFromQueue,
   reorderQueue: player.reorderQueue,
