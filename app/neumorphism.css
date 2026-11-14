@@ -92,25 +92,14 @@
 /* Play button icon + glow ring while playing. */
 .nm-play-icon {
   color: var(--nm-accent);
-  filter: drop-shadow(0 0 6px var(--nm-glow-strong));
 }
 
 .nm-nav-glow {
-  filter: drop-shadow(0 0 6px var(--nm-glow-strong));
+  /* tint only; no standing bloom */
 }
 
 .nm-play-glow {
-  position: relative;
-}
-
-.nm-play-glow::before {
-  content: "";
-  position: absolute;
-  inset: -6px;
-  border-radius: inherit;
-  box-shadow: 0 0 30px var(--nm-glow);
-  pointer-events: none;
-  z-index: -1;
+  /* no standing bloom; glow fires on :active */
 }
 
 /* When a pressed surface also carries the accent cue, accent wins over the
@@ -118,6 +107,29 @@
 .nm-pressed.nm-accent,
 .nm-pressed-sm.nm-accent {
   color: var(--nm-accent);
+}
+
+/* Click/press glow pulse (fades out via transition). */
+.nm-nav-button:active,
+.nm-card:active,
+.nm-mini-play:active {
+  box-shadow:
+    0 0 24px var(--nm-glow-strong),
+    inset var(--nm-distance-sm) var(--nm-distance-sm) var(--nm-blur-sm) var(--nm-shadow-dark),
+    inset calc(-1 * var(--nm-distance-sm)) calc(-1 * var(--nm-distance-sm)) var(--nm-blur-sm)
+      var(--nm-shadow-light);
+  transition: box-shadow 400ms var(--nm-ease), transform 180ms var(--nm-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nm-nav-button:active,
+  .nm-card:active,
+  .nm-mini-play:active {
+    box-shadow: inset var(--nm-distance-sm) var(--nm-distance-sm) var(--nm-blur-sm) var(--nm-shadow-dark),
+      inset calc(-1 * var(--nm-distance-sm)) calc(-1 * var(--nm-distance-sm)) var(--nm-blur-sm)
+        var(--nm-shadow-light);
+    transition: none;
+  }
 }
 
 /* Text link on the neumorphic surface: accent only, no extra chrome. */
