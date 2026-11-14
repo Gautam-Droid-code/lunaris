@@ -1,6 +1,11 @@
 "use client";
 
-export default function ErrorPage({ retry }: { retry: () => void }) {
+export default function ErrorPage({
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   return (
     <main className="nm-screen min-h-dvh">
       <div className="nm-container flex min-h-[calc(100dvh-5rem)] flex-col items-center justify-center gap-6 pb-12 pt-5">
@@ -11,7 +16,7 @@ export default function ErrorPage({ retry }: { retry: () => void }) {
           </p>
           <button
             type="button"
-            onClick={() => retry()}
+            onClick={() => reset()}
             className="nm-card nm-raised-sm mt-2 inline-flex min-h-11 items-center justify-center rounded-2xl px-6 text-sm font-medium nm-strong"
           >
             Try again

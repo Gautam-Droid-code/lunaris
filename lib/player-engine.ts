@@ -335,6 +335,7 @@ export function createPlayer(
     },
 
     setFollowMode(on: boolean) {
+      if (state.followMode === on) return;
       update({ followMode: on });
     },
 

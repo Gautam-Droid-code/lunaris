@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { player as playerSingleton, usePlayer } from "@/components/player-provider";
+import { player as playerSingleton } from "@/components/player-provider";
 import { useCurrentRoom } from "@/lib/room-store";
 import { createSupabaseBrowser } from "@/lib/supabase/client";
 import type { Track } from "@/lib/music";
@@ -34,7 +34,6 @@ function toTrack(p: SyncPayload): Track | null {
 
 export function useRoomSync() {
   const { room } = useCurrentRoom();
-  const player = usePlayer();
   const [needsTap, setNeedsTap] = useState(false);
   const audioUnlocked = useRef(false);
   const lastVideoId = useRef<string | null>(null);
@@ -44,7 +43,7 @@ export function useRoomSync() {
   const isLeader = room?.isLeader === true;
   const roomId = room?.id ?? null;
 
-  // Leader: broadcast on videoId/isPlaying change + 4s ping
+  // Leader: broadcast on videoId/isPlaying change + 4s ping.
   useEffect(() => {
     if (!roomId || !isLeader) return;
     const supabase = createSupabaseBrowser();
@@ -87,12 +86,12 @@ export function useRoomSync() {
       unsub();
       supabase.removeChannel(channel);
     };
-  }, [roomId, isLeader, player]);
+  }, [roomId, isLeader]);
 
-  // Follower: apply sync
+  // Follower: apply sync via the stable singleton.
   useEffect(() => {
     if (!roomId || isLeader) return;
-    player.setFollowMode(true);
+    playerSingleton.setFollowMode(true);
     const supabase = createSupabaseBrowser();
     const channel = supabase.channel(`room-sync:${roomId}`);
     channel.on("broadcast", { event: "sync" }, ({ payload }) => {
@@ -103,38 +102,38 @@ export function useRoomSync() {
       if (p.videoId !== lastVideoId.current) {
         lastVideoId.current = p.videoId;
         const t = toTrack(p);
-        if (t) player.remoteLoad(t);
+        if (t) playerSingleton.remoteLoad(t);
       }
       if (p.isPlaying) {
         if (!audioUnlocked.current) {
           setNeedsTap(true);
           return;
         }
-        player.remotePlay();
+        playerSingleton.remotePlay();
         const s = playerSingleton.getState();
         if (Math.abs(s.currentTime - expected) > 1.5) {
-          player.remoteSeek(expected);
+          playerSingleton.remoteSeek(expected);
         }
       } else {
-        player.remotePause();
-        player.remoteSeek(expected);
+        playerSingleton.remotePause();
+        playerSingleton.remoteSeek(expected);
       }
     });
     channel.subscribe();
 
     return () => {
-      player.setFollowMode(false);
+      playerSingleton.setFollowMode(false);
       supabase.removeChannel(channel);
       lastVideoId.current = null;
       audioUnlocked.current = false;
       setNeedsTap(false);
     };
-  }, [roomId, isLeader, player]);
+  }, [roomId, isLeader]);
 
   const unlock = () => {
     audioUnlocked.current = true;
     setNeedsTap(false);
-    player.remotePlay();
+    playerSingleton.remotePlay();
   };
 
   return { needsTap, unlock, isLeader };
