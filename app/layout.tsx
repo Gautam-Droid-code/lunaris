@@ -6,6 +6,7 @@ import { BottomNav } from "@/components/bottom-nav";
 import { NowPlayingBar } from "@/components/now-playing-bar";
 import { PlayerProvider } from "@/components/player-provider";
 import { RoomPresence } from "@/components/room-presence";
+import { RoomSyncProvider } from "@/components/room-sync-provider";
 import { TrackSheet } from "@/components/track-sheet";
 import "./globals.css";
 import "./neumorphism.css";
@@ -35,19 +36,21 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-dvh font-sans">
         <PlayerProvider>
           <RoomPresence />
-          <div className="flex min-h-dvh">
+          <RoomSyncProvider>
+            <div className="flex min-h-dvh">
+              <Suspense fallback={null}>
+                <AppSidebar />
+              </Suspense>
+              <div className="min-w-0 flex-1">{children}</div>
+            </div>
             <Suspense fallback={null}>
-              <AppSidebar />
+              <BottomNav />
             </Suspense>
-            <div className="min-w-0 flex-1">{children}</div>
-          </div>
-          <Suspense fallback={null}>
-            <BottomNav />
-          </Suspense>
-          <Suspense>
-            <NowPlayingBar />
-          </Suspense>
-          <TrackSheet />
+            <Suspense>
+              <NowPlayingBar />
+            </Suspense>
+            <TrackSheet />
+          </RoomSyncProvider>
         </PlayerProvider>
       </body>
     </html>

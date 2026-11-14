@@ -20,7 +20,7 @@ import {
 import { LikeButton } from "@/components/like-button";
 import { PlayButton } from "@/components/play-button";
 import { useCurrentRoom } from "@/lib/room-store";
-import { useRoomSync } from "@/lib/room-sync";
+import { useRoomSyncState } from "@/components/room-sync-provider";
 import { PlayerSlot, player, usePlayer } from "@/components/player-provider";
 import { artistNames, clockTime } from "@/lib/format";
 import { openTrackMenu } from "@/lib/library-store";
@@ -188,7 +188,7 @@ function PlayerCard({
     seek,
   } = usePlayer();
   const { room } = useCurrentRoom();
-  const { needsTap, unlock, isLeader } = useRoomSync();
+  const { needsTap, unlock, isLeader } = useRoomSyncState();
   const isFollower = !!room && !isLeader;
   const repeatLabel = { off: "Repeat off", all: "Repeat all", one: "Repeat one" }[repeat];
 
