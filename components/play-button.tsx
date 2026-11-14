@@ -19,9 +19,9 @@ export function PlayButton({
       onClick={togglePlay}
       disabled={!currentTrack}
       aria-label={isPlaying ? "Pause" : "Play"}
-      className={className}
+      className={`${className}${isPlaying ? " nm-play-glow" : ""}`}
     >
-      <Icon className={iconClassName} />
+      <Icon className={`${iconClassName ?? ""} nm-play-icon`} />
     </button>
   );
 }

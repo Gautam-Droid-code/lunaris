@@ -26,7 +26,7 @@ export function BottomNav() {
               active ? "nm-accent" : "nm-muted"
             }`}
           >
-            <Icon className="size-5" />
+            <Icon className={`size-5 ${active ? "nm-accent nm-nav-glow" : ""}`} />
             <span>{label}</span>
           </Link>
         );

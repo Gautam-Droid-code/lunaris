@@ -89,6 +89,30 @@
   color: var(--nm-accent);
 }
 
+/* Play button icon + glow ring while playing. */
+.nm-play-icon {
+  color: var(--nm-accent);
+  filter: drop-shadow(0 0 6px var(--nm-glow-strong));
+}
+
+.nm-nav-glow {
+  filter: drop-shadow(0 0 6px var(--nm-glow-strong));
+}
+
+.nm-play-glow {
+  position: relative;
+}
+
+.nm-play-glow::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  box-shadow: 0 0 30px var(--nm-glow);
+  pointer-events: none;
+  z-index: -1;
+}
+
 /* When a pressed surface also carries the accent cue, accent wins over the
    pressed primitive's strong-text colour. */
 .nm-pressed.nm-accent,

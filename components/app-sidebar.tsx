@@ -39,7 +39,9 @@ function NavItem({
         active ? "nm-pressed-sm nm-accent" : "nm-raised-sm"
       }`}
     >
-      <span className="grid size-5 shrink-0 place-items-center">{icon}</span>
+      <span className={`grid size-5 shrink-0 place-items-center ${active ? "nm-accent nm-nav-glow" : ""}`}>
+        {icon}
+      </span>
       <span className={`${expanded ? "block" : "hidden"} md:hidden lg:block`}>
         {label}
       </span>

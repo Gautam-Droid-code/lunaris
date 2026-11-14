@@ -185,7 +185,7 @@ function PlayerCard({
     <section className={`nm-card nm-raised p-4 sm:p-5`} aria-label="Player">
       <div className="flex items-center gap-4">
         <div className="w-28 shrink-0">
-          <div className="nm-video-well nm-inset">
+          <div className="nm-video-well nm-inset nm-glow-pulse">
             <div className="nm-video-frame">
               <Cover
                 thumbnails={track.thumbnails}

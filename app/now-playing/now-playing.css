@@ -90,31 +90,21 @@
 .nm-seek::-webkit-slider-runnable-track {
   height: 6px;
   border-radius: 999px;
-  background: linear-gradient(
-    to right,
-    var(--nm-accent) var(--fill, 0%),
-    transparent var(--fill, 0%)
-  );
-  box-shadow:
-    inset calc(var(--nm-distance) / 3) calc(var(--nm-distance) / 3)
-      calc(var(--nm-blur) * 5 / 12) var(--nm-shadow-dark),
-    inset calc(-1 * var(--nm-distance) / 3) calc(-1 * var(--nm-distance) / 3)
-      calc(var(--nm-blur) * 5 / 12) var(--nm-shadow-light);
+  background-color: var(--nm-shadow-dark);
+  background-image: linear-gradient(90deg, var(--nm-accent-deep), var(--nm-accent));
+  background-size: var(--fill, 0%) 100%;
+  background-repeat: no-repeat;
+  box-shadow: 0 0 14px var(--nm-glow-strong);
 }
 
 .nm-seek::-moz-range-track {
   height: 6px;
   border-radius: 999px;
-  background: linear-gradient(
-    to right,
-    var(--nm-accent) var(--fill, 0%),
-    transparent var(--fill, 0%)
-  );
-  box-shadow:
-    inset calc(var(--nm-distance) / 3) calc(var(--nm-distance) / 3)
-      calc(var(--nm-blur) * 5 / 12) var(--nm-shadow-dark),
-    inset calc(-1 * var(--nm-distance) / 3) calc(-1 * var(--nm-distance) / 3)
-      calc(var(--nm-blur) * 5 / 12) var(--nm-shadow-light);
+  background-color: var(--nm-shadow-dark);
+  background-image: linear-gradient(90deg, var(--nm-accent-deep), var(--nm-accent));
+  background-size: var(--fill, 0%) 100%;
+  background-repeat: no-repeat;
+  box-shadow: 0 0 14px var(--nm-glow-strong);
 }
 
 .nm-seek::-webkit-slider-thumb {
@@ -148,9 +138,42 @@
 .nm-video-well {
   --nm-depth-scale: calc(2 / 3);
   --nm-blur-scale: calc(3 / 4);
-  padding: 5px;
-  border-radius: 18px;
+  padding: 14px;
+  border-radius: 24px;
   background: var(--nm-bg);
+}
+
+.nm-glow-pulse {
+  position: relative;
+  box-shadow:
+    0 0 50px 6px var(--nm-glow),
+    inset 5px 5px 10px var(--nm-shadow-dark),
+    inset -5px -5px 10px var(--nm-shadow-light);
+}
+
+.nm-glow-pulse::before {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  border-radius: inherit;
+  background: radial-gradient(circle, var(--nm-glow) 0%, transparent 70%);
+  opacity: 0.6;
+  filter: blur(14px);
+  z-index: -1;
+  pointer-events: none;
+  animation: nm-glow-pulse 4.5s ease-in-out infinite;
+}
+
+@keyframes nm-glow-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nm-glow-pulse::before {
+    animation: none;
+    opacity: 0.8;
+  }
 }
 
 .nm-video-frame {
@@ -223,7 +246,8 @@
 .nm-lyric-line-active {
   /* inset depth comes from .nm-pressed */
   background: var(--nm-bg);
-  color: var(--nm-text-strong);
+  color: #ffffff;
+  text-shadow: 0 0 18px var(--nm-glow-strong);
   opacity: 1;
   font-weight: 600;
 }
