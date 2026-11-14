@@ -33,7 +33,7 @@ export async function SearchResults({
       {songs.length > 0 && (
         <section>
           <h2 className="mb-2 text-lg font-semibold tracking-tight nm-strong">Songs</h2>
-          <TrackList tracks={songs.slice(0, 8)} playsAlone variant="neumorphic" />
+          <TrackList tracks={songs.slice(0, 8)} playsAlone variant="neumorphic" showAddToGroup />
         </section>
       )}
       <MediaRow

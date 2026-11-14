@@ -1,10 +1,12 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { Cover } from "@/components/cover";
-import { MoreIcon, PlayIcon } from "@/components/icons";
+import { CheckIcon, MoreIcon, PlayIcon, PlusIcon } from "@/components/icons";
+import { useCurrentRoom } from "@/lib/room-store";
+import { artUrl } from "@/lib/format";
 import { usePlayer } from "@/components/player-provider";
 import { artistNames } from "@/lib/format";
 import { openTrackMenu } from "@/lib/library-store";
@@ -23,13 +25,36 @@ export function TrackList({
   tracks,
   playsAlone = false,
   variant = "default",
+  showAddToGroup = false,
 }: {
   tracks: Track[];
   playsAlone?: boolean;
   variant?: "default" | "neumorphic" | "chart";
+  showAddToGroup?: boolean;
 }) {
   const { currentTrack, playTrack } = usePlayer();
+  const { room } = useCurrentRoom();
   const listRef = useRef<HTMLOListElement>(null);
+  const [added, setAdded] = useState<Set<string>>(new Set());
+
+  async function addToGroup(track: Track) {
+    if (!room) return;
+    try {
+      await fetch(`/api/rooms/${room.id}/playlist`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          videoId: track.videoId,
+          title: track.title ?? "Untitled",
+          artists: track.artists,
+          thumbnail: artUrl(track.thumbnails, 320),
+        }),
+      });
+      setAdded((prev) => new Set(prev).add(track.videoId));
+    } catch {
+      // ignore
+    }
+  }
   const chart = variant === "chart";
 
   useGSAP(
@@ -139,6 +164,20 @@ export function TrackList({
                 </>
               )}
             </button>
+            {showAddToGroup && room && (
+              <button
+                type="button"
+                onClick={() => addToGroup(track)}
+                aria-label={`Add ${track.title ?? "this song"} to group room`}
+                className="nm-nav-button nm-raised-sm grid size-10 shrink-0 place-items-center"
+              >
+                {added.has(track.videoId) ? (
+                  <CheckIcon className="size-4" />
+                ) : (
+                  <PlusIcon className="size-4" />
+                )}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => openTrackMenu(track)}

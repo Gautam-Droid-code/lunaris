@@ -6,6 +6,8 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { Cover } from "@/components/cover";
 import {
+  Back10Icon,
+  Forward10Icon,
   MoreIcon,
   NextIcon,
   PlayIcon,
@@ -182,6 +184,8 @@ function PlayerCard({
     setVolume,
     prev,
     next,
+    currentTime,
+    seek,
   } = usePlayer();
   const { room } = useCurrentRoom();
   const { needsTap, unlock, isLeader } = useRoomSync();
@@ -256,7 +260,7 @@ function PlayerCard({
           </button>
         </div>
       ) : (
-        <div className="mt-4 flex items-center justify-center gap-5">
+        <div className="mt-4 flex items-center justify-center gap-3">
           <button
             type="button"
             onClick={prev}
@@ -266,10 +270,28 @@ function PlayerCard({
           >
             <PrevIcon className="size-4" />
           </button>
+          <button
+            type="button"
+            onClick={() => seek(Math.max(0, currentTime - 10))}
+            disabled={!currentTrack || isFollower}
+            aria-label="Back 10 seconds"
+            className={`nm-icon-button nm-raised grid size-11 place-items-center ${isFollower ? "opacity-50" : ""}`}
+          >
+            <Back10Icon className="size-4" />
+          </button>
           <PlayButton
             className={`nm-play-disc nm-raised grid size-20 place-items-center ${isFollower ? "opacity-50" : ""}`}
             iconClassName="size-7"
           />
+          <button
+            type="button"
+            onClick={() => seek(currentTime + 10)}
+            disabled={!currentTrack || isFollower}
+            aria-label="Forward 10 seconds"
+            className={`nm-icon-button nm-raised grid size-11 place-items-center ${isFollower ? "opacity-50" : ""}`}
+          >
+            <Forward10Icon className="size-4" />
+          </button>
           <button
             type="button"
             onClick={next}

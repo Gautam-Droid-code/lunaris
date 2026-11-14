@@ -147,6 +147,35 @@ export const SearchIcon = (p: IconProps) => (
     <path d="m16 16 4.5 4.5" />
   </Icon>
 );
+export const UserIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="8" r="4" />
+    <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+  </Icon>
+);
+export const Back10Icon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 12a9 9 0 1 0 3-6.7" />
+    <path d="M3 4v5h5" />
+    <text x="12" y="15" fontSize="7" fontWeight="700" textAnchor="middle" fill="currentColor" stroke="none">
+      10
+    </text>
+  </Icon>
+);
+export const Forward10Icon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M21 12a9 9 0 1 0-3 6.7" />
+    <path d="M21 20v-5h-5" />
+    <text x="12" y="15" fontSize="7" fontWeight="700" textAnchor="middle" fill="currentColor" stroke="none">
+      10
+    </text>
+  </Icon>
+);
+export const CheckIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="m5 12 5 5 9-11" />
+  </Icon>
+);
 export const SettingsIcon = (p: IconProps) => (
   <Icon {...p}>
     <circle cx="12" cy="12" r="3" />

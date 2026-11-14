@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { BackIcon, SettingsIcon } from "@/components/icons";
+import { BackIcon, UserIcon } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { RoomNavLink } from "@/components/room-nav-link";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -27,7 +27,7 @@ export function AppHeader({ showBack = false }: { showBack?: boolean }) {
           aria-label="Settings"
           className="nm-nav-button nm-raised-sm size-11 md:hidden"
         >
-          <SettingsIcon />
+          <UserIcon />
         </Link>
         <div className="md:hidden">
           <Suspense fallback={null}>

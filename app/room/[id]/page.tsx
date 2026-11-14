@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import Link from "next/link";
 import { AppHeader } from "@/components/app-header";
+import { CloseIcon } from "@/components/icons";
 import { Cover } from "@/components/cover";
 import { Notice } from "@/components/notice";
 import { usePlayer } from "@/components/player-provider";
@@ -30,6 +31,8 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
   const [tracks, setTracks] = useState<Track[]>([]);
   const [copying, setCopying] = useState(false);
   const [copyMsg, setCopyMsg] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [leaveConfirm, setLeaveConfirm] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -132,6 +135,28 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
     if (res.ok) {
       const pl = await res.json();
       setTracks(pl.tracks ?? []);
+    }
+  }
+
+  async function deleteAll() {
+    if (!id || tracks.length === 0) return;
+    if (!window.confirm("Remove all songs from the group playlist?")) return;
+    setDeleting(true);
+    try {
+      for (const t of tracks) {
+        await fetch(`/api/rooms/${id}/playlist`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ videoId: t.videoId }),
+        });
+      }
+      const res = await fetch(`/api/rooms/${id}/playlist`);
+      if (res.ok) {
+        const pl = await res.json();
+        setTracks(pl.tracks ?? []);
+      }
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -241,6 +266,18 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
               >
                 Add songs
               </Link>
+              {room?.isLeader && tracks.length > 0 && (
+                <button
+                  type="button"
+                  onClick={deleteAll}
+                  disabled={deleting}
+                  aria-label="Delete playlist"
+                  className="nm-nav-button nm-raised-sm inline-flex min-h-9 items-center gap-2 rounded-2xl px-4 text-xs font-medium text-red-500 disabled:opacity-60"
+                >
+                  <CloseIcon className="size-3.5" />
+                  {deleting ? "Removing…" : "Delete playlist"}
+                </button>
+              )}
               <button
                 type="button"
                 onClick={copyToLibrary}
@@ -283,7 +320,7 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
                     aria-label={`Remove ${track.title ?? "track"}`}
                     className="nm-nav-button nm-raised-sm grid size-8 shrink-0 place-items-center"
                   >
-                    <span className="text-xs">✕</span>
+                    <CloseIcon className="size-3.5" />
                   </button>
                 </li>
               ))}
@@ -291,14 +328,52 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
           )}
         </section>
 
-        <button
-          type="button"
-          onClick={leave}
-          disabled={busy}
-          className="nm-card nm-raised-sm min-h-11 rounded-2xl px-6 text-sm font-medium nm-strong disabled:opacity-60"
-        >
-          Leave room
-        </button>
+        {leaveConfirm ? (
+          <div className="nm-card nm-raised flex flex-col gap-2 p-4">
+            <p className="text-sm nm-strong">Leave this room?</p>
+            {tracks.length > 0 && (
+              <button
+                type="button"
+                onClick={async () => {
+                  await copyToLibrary();
+                  await leave();
+                  setLeaveConfirm(false);
+                }}
+                disabled={busy || copying}
+                className="nm-card nm-raised-sm min-h-11 rounded-2xl px-6 text-sm font-medium nm-strong disabled:opacity-60"
+              >
+                Save to my library & leave
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                void leave();
+                setLeaveConfirm(false);
+              }}
+              disabled={busy}
+              className="nm-card nm-raised-sm min-h-11 rounded-2xl px-6 text-sm font-medium nm-strong disabled:opacity-60"
+            >
+              Leave without saving
+            </button>
+            <button
+              type="button"
+              onClick={() => setLeaveConfirm(false)}
+              className="nm-card nm-raised-sm min-h-11 rounded-2xl px-6 text-sm font-medium nm-muted"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => (tracks.length > 0 ? setLeaveConfirm(true) : void leave())}
+            disabled={busy}
+            className="nm-card nm-raised-sm min-h-11 rounded-2xl px-6 text-sm font-medium nm-strong disabled:opacity-60"
+          >
+            Leave room
+          </button>
+        )}
       </div>
     </main>
   );
