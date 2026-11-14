@@ -73,12 +73,19 @@ function openChannel(roomId: string, userId: string, name: string) {
     void supabase.rpc("touch_room_membership", { p_room: roomId });
   };
   touch();
-  heartbeat = setInterval(touch, 45000);
+  heartbeat = setInterval(touch, 30000);
+  const onVisible = () => {
+    if (document.visibilityState === "visible") touch();
+  };
+  document.addEventListener("visibilitychange", onVisible);
+  window.addEventListener("focus", touch);
   cleanup = () => {
     if (heartbeat) {
       clearInterval(heartbeat);
       heartbeat = null;
     }
+    document.removeEventListener("visibilitychange", onVisible);
+    window.removeEventListener("focus", touch);
     try {
       ch.untrack();
     } catch {

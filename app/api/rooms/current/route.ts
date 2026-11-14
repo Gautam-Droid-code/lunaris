@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
     const rooms = (data as { rooms: { id: string; code: string; leader_id: string } | { id: string; code: string; leader_id: string }[] | null }).rooms;
     const room = Array.isArray(rooms) ? rooms[0] ?? null : rooms;
     if (!room) return NextResponse.json(null);
+    await supabase.rpc("touch_room_membership", { p_room: room.id });
     return NextResponse.json({ ...room, isLeader: room.leader_id === user.id });
   });
 }
