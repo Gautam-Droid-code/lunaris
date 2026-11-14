@@ -99,7 +99,7 @@ function GroupRow() {
         Group
       </span>
       {room && (
-        <div className="mt-1 flex justify-center">
+        <div className="mt-2 flex justify-center">
           {confirming ? (
             <div className="flex gap-1">
               <button
@@ -151,23 +151,23 @@ export function AppSidebar() {
   }
 
   return (
-    <aside className="hidden shrink-0 flex-col items-center gap-3 p-3 md:flex md:w-[72px]">
+    <aside className="hidden shrink-0 flex-col items-center gap-4 p-4 md:flex md:w-[72px]">
       <Link href="/" aria-label="Lunaris home" className="inline-flex items-center">
         <Logo variant="mark" size={32} />
       </Link>
-      <nav className="flex flex-col items-center gap-2">
+      <nav className="flex flex-col items-center gap-4">
         <NavItem href="/" label="Listen Now" icon={<HomeIcon className="size-5" />} />
         <NavItem href="/browse" label="Browse" icon={<BrowseIcon className="size-5" />} />
         <NavItem href="/search" label="Search" icon={<SearchIcon className="size-5" />} />
         <GroupRow />
       </nav>
-      <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-col items-center gap-4">
         <NavItem href="/library" label="Playlists" icon={<LibraryIcon className="size-5" />} />
         <NavItem href="/library#liked-songs" label="Favorite Songs" icon={<HeartIcon className="size-5" />} />
       </div>
-      <div className="mt-auto flex flex-col items-center gap-2">
+      <div className="mt-auto flex flex-col items-center gap-4">
         {ready && user ? (
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-4">
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
