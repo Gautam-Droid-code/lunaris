@@ -17,7 +17,7 @@ export function AppHeader({ showBack = false }: { showBack?: boolean }) {
           <BackIcon />
         </Link>
       ) : (
-        <Link href="/" aria-label="Lunaris home" className="inline-flex items-center">
+        <Link href="/" aria-label="Lunaris home" className="inline-flex items-center lg:hidden">
           <Logo variant="full" size={32} />
         </Link>
       )}
@@ -34,7 +34,9 @@ export function AppHeader({ showBack = false }: { showBack?: boolean }) {
             <RoomNavLink />
           </Suspense>
         </div>
-        <ThemeToggle />
+        <div className="lg:hidden">
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

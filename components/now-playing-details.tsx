@@ -367,7 +367,9 @@ function LyricsPanel({ videoId }: { videoId: string }) {
   const failed = lyrics === "failed";
   const empty =
     typeof lyrics === "object" &&
-    (!lyrics?.lyrics || (Array.isArray(lyrics.lyrics) && lyrics.lyrics.length === 0));
+    lyrics !== null &&
+    (!lyrics.lines || lyrics.lines.length === 0) &&
+    (!lyrics.lyrics || (Array.isArray(lyrics.lyrics) && lyrics.lyrics.length === 0));
 
   return (
     <section className="min-w-0" aria-label="Lyrics">
@@ -440,7 +442,7 @@ function LyricsPanel({ videoId }: { videoId: string }) {
 
         {!loading && !failed && !empty && !parsed.synced && (
           <div className="mx-auto max-w-xl px-2 py-8 sm:px-4">
-            {typeof lyrics === "object" && typeof lyrics.lyrics === "string" ? (
+            {lyrics !== null && typeof lyrics === "object" && typeof lyrics.lyrics === "string" ? (
               <p
                 className={`nm-plain-line whitespace-pre-line text-lg leading-relaxed tracking-tight sm:text-xl`}
               >
