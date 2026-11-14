@@ -9,7 +9,7 @@ export async function GET(
   return asUser(request, async (supabase, user) => {
     const { data, error } = await supabase
       .from("rooms")
-      .select("id, code, leader_id")
+      .select("id, code, leader_id, group_playlist_id")
       .eq("id", id)
       .single();
     if (error || !data) {

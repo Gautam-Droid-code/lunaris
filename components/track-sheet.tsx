@@ -12,6 +12,8 @@ import {
 } from "@/lib/library-store";
 import { HeartIcon } from "@/components/icons";
 import { artistNames } from "@/lib/format";
+import { artUrl } from "@/lib/format";
+import { useCurrentRoom } from "@/lib/room-store";
 import type { PlaylistInfo } from "@/lib/library";
 import type { Track } from "@/lib/music";
 
@@ -20,8 +22,28 @@ const sheetButton =
 
 function SavedActions({ track }: { track: Track }) {
   const { likedIds, playlists } = useLibrary();
+  const { room: currentRoom } = useCurrentRoom();
   const [name, setName] = useState("");
   const liked = likedIds.has(track.videoId);
+
+  async function addToGroupRoom() {
+    if (!currentRoom) return;
+    closeTrackMenu();
+    try {
+      await fetch(`/api/rooms/${currentRoom.id}/playlist`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          videoId: track.videoId,
+          title: track.title ?? "Untitled",
+          artists: track.artists,
+          thumbnail: artUrl(track.thumbnails, 320),
+        }),
+      });
+    } catch {
+      // ignore
+    }
+  }
 
   function add(playlist: PlaylistInfo) {
     closeTrackMenu();
@@ -48,6 +70,12 @@ function SavedActions({ track }: { track: Track }) {
         <HeartIcon filled={liked} />
         {liked ? "Liked" : "Like"}
       </button>
+
+      {currentRoom && (
+        <button type="button" onClick={addToGroupRoom} className={sheetButton}>
+          Add to group room
+        </button>
+      )}
 
       <h3 className="mt-3 px-4 text-sm font-medium text-text-muted">Add to playlist</h3>
       <ul className="max-h-52 overflow-y-auto">

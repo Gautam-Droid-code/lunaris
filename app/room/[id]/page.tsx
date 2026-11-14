@@ -3,9 +3,15 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
+import Link from "next/link";
 import { AppHeader } from "@/components/app-header";
+import { Cover } from "@/components/cover";
 import { Notice } from "@/components/notice";
+import { usePlayer } from "@/components/player-provider";
+import { artistNames } from "@/lib/format";
 import { clearCurrentRoom, refreshCurrentRoom, useCurrentRoom } from "@/lib/room-store";
+import { createSupabaseBrowser } from "@/lib/supabase/client";
+import type { Track } from "@/lib/music";
 
 export default function RoomScreen({ params }: { params: Promise<{ id: string }> }) {
   const [id, setId] = useState<string | null>(null);
@@ -14,16 +20,22 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
   }, [params]);
 
   const router = useRouter();
+  const { playTrack } = usePlayer();
   const { members } = useCurrentRoom();
-  const [room, setRoom] = useState<{ id: string; code: string; leader_id: string; isLeader: boolean } | null>(null);
+  const [room, setRoom] = useState<{ id: string; code: string; leader_id: string; isLeader: boolean; group_playlist_id?: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [tracks, setTracks] = useState<Track[]>([]);
+  const [copying, setCopying] = useState(false);
+  const [copyMsg, setCopyMsg] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
     let mounted = true;
+    let channel: ReturnType<ReturnType<typeof createSupabaseBrowser>["channel"]> | null = null;
+
     (async () => {
       const supabase = (await import("@/lib/supabase/client")).createSupabaseBrowser();
       const { data } = await supabase.auth.getUser();
@@ -41,9 +53,42 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
       if (!mounted) return;
       setRoom(r);
       setLoading(false);
+
+      // Fetch playlist
+      const plRes = await fetch(`/api/rooms/${id}/playlist`);
+      if (plRes.ok) {
+        const pl = await plRes.json();
+        if (!mounted) return;
+        setTracks(pl.tracks ?? []);
+      }
+
+      // Realtime subscription
+      if (r.group_playlist_id) {
+        channel = supabase
+          .channel(`playlist:${r.group_playlist_id}`)
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "playlist_tracks", filter: `playlist_id=eq.${r.group_playlist_id}` },
+            () => {
+              void fetch(`/api/rooms/${id}/playlist`)
+                .then((res) => res.json())
+                .then((pl) => {
+                  if (!mounted) return;
+                  setTracks(pl.tracks ?? []);
+                })
+                .catch(() => {});
+            },
+          )
+          .subscribe();
+      }
     })();
+
     return () => {
       mounted = false;
+      if (channel) {
+        const supabase = createSupabaseBrowser();
+        supabase.removeChannel(channel);
+      }
     };
   }, [id]);
 
@@ -72,6 +117,36 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
       await refreshCurrentRoom();
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function removeTrack(videoId: string) {
+    if (!id) return;
+    await fetch(`/api/rooms/${id}/playlist`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ videoId }),
+    });
+    // refetch
+    const res = await fetch(`/api/rooms/${id}/playlist`);
+    if (res.ok) {
+      const pl = await res.json();
+      setTracks(pl.tracks ?? []);
+    }
+  }
+
+  async function copyToLibrary() {
+    if (!id) return;
+    setCopying(true);
+    setCopyMsg(null);
+    try {
+      const res = await fetch(`/api/rooms/${id}/playlist/copy`, { method: "POST" });
+      if (!res.ok) throw new Error("Copy failed");
+      setCopyMsg("Saved to your library");
+    } catch {
+      setCopyMsg("Couldn't save");
+    } finally {
+      setCopying(false);
     }
   }
 
@@ -153,6 +228,67 @@ export default function RoomScreen({ params }: { params: Promise<{ id: string }>
               );
             })}
           </ul>
+        </section>
+
+        {/* Group playlist */}
+        <section className="nm-card nm-raised p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold tracking-tight nm-strong">Group playlist</h2>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/search"
+                className="nm-nav-button nm-raised-sm inline-flex min-h-9 items-center gap-2 rounded-2xl px-4 text-xs font-medium nm-strong"
+              >
+                Add songs
+              </Link>
+              <button
+                type="button"
+                onClick={copyToLibrary}
+                disabled={copying || tracks.length === 0}
+                className="nm-card nm-raised-sm inline-flex min-h-9 items-center gap-2 rounded-2xl px-4 text-xs font-medium nm-strong disabled:opacity-60"
+              >
+                {copying ? "Saving…" : "Save to my library"}
+              </button>
+            </div>
+          </div>
+          {copyMsg && <p className="mt-2 text-xs nm-muted">{copyMsg}</p>}
+          {tracks.length === 0 ? (
+            <div className="nm-well nm-inset mt-3 flex min-h-[120px] flex-col items-center justify-center gap-2 p-6 text-center">
+              <p className="font-medium nm-strong">No songs yet</p>
+              <p className="text-xs nm-muted">Add one from search.</p>
+            </div>
+          ) : (
+            <ul className="mt-3 flex flex-col gap-2">
+              {tracks.map((track, i) => (
+                <li key={`${track.videoId}-${i}`} className="nm-row nm-song-row flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => playTrack(track, tracks)}
+                    className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                  >
+                    <span className="nm-thumb nm-inset-sm block shrink-0 p-[2px]">
+                      <Cover thumbnails={track.thumbnails} alt="" size={96} className="size-10 rounded-[8px]" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold nm-strong">{track.title ?? "Untitled"}</span>
+                      <span className="mt-0.5 block truncate text-xs nm-muted">{artistNames(track.artists)}</span>
+                    </span>
+                    {track.duration && (
+                      <span className="shrink-0 text-xs tabular-nums nm-muted">{track.duration}</span>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removeTrack(track.videoId)}
+                    aria-label={`Remove ${track.title ?? "track"}`}
+                    className="nm-nav-button nm-raised-sm grid size-8 shrink-0 place-items-center"
+                  >
+                    <span className="text-xs">✕</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         <button
