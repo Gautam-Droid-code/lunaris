@@ -5,7 +5,6 @@ import { attempt, getCharts, getPlaylist } from "@/lib/music";
 import { createSupabase } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Lunaris" };
-export const instant = false;
 
 async function Content() {
   const supabase = await createSupabase();

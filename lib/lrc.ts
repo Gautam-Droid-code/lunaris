@@ -1,5 +1,5 @@
 /** A parsed LRC line: time in milliseconds + text. */
-export type LrcLine = { timeMs: number; text: string };
+type LrcLine = { timeMs: number; text: string };
 
 const TIME_TAG = /\[(\d{1,2}):(\d{2})(?:[.:](\d{1,3}))?\]/g;
 

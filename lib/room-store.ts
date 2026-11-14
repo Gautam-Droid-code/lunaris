@@ -4,7 +4,7 @@ import { useSyncExternalStore } from "react";
 import { createSupabaseBrowser } from "@/lib/supabase/client";
 import { displayName, type RoomPresence } from "@/lib/room-channel";
 
-export type CurrentRoom = { id: string; code: string; leader_id: string; isLeader: boolean };
+type CurrentRoom = { id: string; code: string; leader_id: string; isLeader: boolean };
 
 type State = {
   room: CurrentRoom | null;
@@ -117,10 +117,6 @@ export function clearCurrentRoom() {
     cleanup = null;
   }
   setState({ room: null, members: [] });
-}
-
-export function getCurrentRoom() {
-  return state.room;
 }
 
 export function useCurrentRoom() {
