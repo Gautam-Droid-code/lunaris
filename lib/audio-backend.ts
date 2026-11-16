@@ -20,7 +20,7 @@ export function createAudioBackend(element: HTMLElement, events: AudioEvents) {
 
   const backend: PlayerBackend = {
     load: (videoId) => {
-      audio.src = `/stream/${encodeURIComponent(videoId)}`;
+      audio.src = `/api/stream/${encodeURIComponent(videoId)}`;
       audio.load();
     },
     play: () => {
@@ -41,13 +41,11 @@ export function createAudioBackend(element: HTMLElement, events: AudioEvents) {
     duration: () => (Number.isFinite(audio.duration) ? audio.duration : 0),
   };
 
-  audio.addEventListener("loadedmetadata", () => events.onReady(backend));
-  audio.addEventListener("canplay", () => events.onReady(backend));
   audio.addEventListener("play", () => events.onState(PLAYING));
   audio.addEventListener("pause", () => events.onState(PAUSED));
   audio.addEventListener("ended", () => events.onState(ENDED));
   audio.addEventListener("error", () => events.onError());
 
-  // If metadata already available, fire ready immediately.
-  if (audio.readyState >= 1) events.onReady(backend);
+  // Connect immediately so the engine can load/play without waiting for metadata.
+  events.onReady(backend);
 }
