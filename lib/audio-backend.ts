@@ -22,6 +22,15 @@ export function createAudioBackend(element: HTMLElement, events: AudioEvents) {
     load: (videoId) => {
       audio.src = `/api/stream/${encodeURIComponent(videoId)}`;
       audio.load();
+      const p = audio.play();
+      if (p && typeof p.then === "function") {
+        p.catch((err: unknown) => {
+          // Autoplay blocked (no user gesture yet): leave paused; a tap will start it.
+          if (err && (err as { name?: string }).name !== "NotAllowedError") {
+            events.onError();
+          }
+        });
+      }
     },
     play: () => {
       void audio.play().catch(() => events.onError());
