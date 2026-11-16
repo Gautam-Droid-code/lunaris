@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore, useState } from "react";
 import { useTransition } from "react";
 import { Cover } from "@/components/cover";
 import { HeartIcon } from "@/components/icons";
@@ -21,6 +21,22 @@ export function SettingsView() {
   const { ready, user } = useLibrary();
   const theme = useSyncExternalStore(subscribeTheme, getTheme, () => "light" as Theme);
   const [signingOut, startSignOut] = useTransition();
+  const [repairing, setRepairing] = useState(false);
+  const [repairMsg, setRepairMsg] = useState<string | null>(null);
+
+  async function repairPlayback() {
+    setRepairing(true);
+    setRepairMsg(null);
+    try {
+      const res = await fetch("/api/repair", { method: "POST" });
+      const data = await res.json().catch(() => ({}));
+      setRepairMsg(data?.ok ? "Playback repaired" : data?.detail ?? "Repair failed");
+    } catch {
+      setRepairMsg("Repair failed");
+    } finally {
+      setRepairing(false);
+    }
+  }
 
   function logOut() {
     startSignOut(async () => {
@@ -89,6 +105,25 @@ export function SettingsView() {
               </button>
             );
           })}
+        </div>
+      </section>
+
+      {/* Playback repair */}
+      <section className="nm-card nm-raised p-5">
+        <h2 className="text-lg font-semibold tracking-tight nm-strong">Playback</h2>
+        <p className="mt-1 text-xs nm-muted">
+          If playback breaks (YouTube changes), repair the audio extractor.
+        </p>
+        <div className="mt-4 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={repairPlayback}
+            disabled={repairing}
+            className="nm-card nm-raised-sm rounded-2xl px-4 py-2 text-sm font-medium nm-strong disabled:opacity-60"
+          >
+            {repairing ? "Repairing…" : "Repair playback"}
+          </button>
+          {repairMsg && <p className="text-xs nm-muted">{repairMsg}</p>}
         </div>
       </section>
 

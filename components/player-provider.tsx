@@ -13,6 +13,7 @@ import { createPortal } from "react-dom";
 import { recordPlay } from "@/lib/library-store";
 import type { Radio, Track } from "@/lib/music";
 import { createPlayer, initialState, type PlayerState } from "@/lib/player-engine";
+import { createAudioBackend } from "@/lib/audio-backend";
 import { createYouTubePlayer } from "@/lib/youtube";
 
 async function fetchRadio(videoId: string): Promise<Track[]> {
@@ -95,14 +96,24 @@ function PlayerHost({ visible }: { visible: boolean }) {
 
     if (!playerCreated) {
       playerCreated = true;
-      // YouTube swaps this element for its iframe, so it has to stay out of React's tree.
-      const target = host.appendChild(document.createElement("div"));
-      createYouTubePlayer(target, {
-        onReady: player.connect,
-        onState: player.handleState,
-        onError: player.handleError,
-        onLoadFailure: player.handleLoadFailure,
-      });
+      const useAudio = process.env.NEXT_PUBLIC_AUDIO_BACKEND === "audio";
+      if (useAudio) {
+        createAudioBackend(host, {
+          onReady: player.connect,
+          onState: player.handleState,
+          onError: player.handleError,
+          onLoadFailure: player.handleLoadFailure,
+        });
+      } else {
+        // YouTube swaps this element for its iframe, so it has to stay out of React's tree.
+        const target = host.appendChild(document.createElement("div"));
+        createYouTubePlayer(target, {
+          onReady: player.connect,
+          onState: player.handleState,
+          onError: player.handleError,
+          onLoadFailure: player.handleLoadFailure,
+        });
+      }
     }
 
     let frame = requestAnimationFrame(function follow() {

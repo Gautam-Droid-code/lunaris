@@ -1,9 +1,16 @@
+import asyncio
 import logging
+import os
+import subprocess
 import threading
-from collections.abc import Callable
+import time
+import urllib.request
+from collections.abc import Callable, Generator
 from typing import Annotated, Literal, TypeVar
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import StreamingResponse
+
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from ytmusicapi import YTMusic
 from ytmusicapi.exceptions import YTMusicServerError, YTMusicUserError
@@ -137,3 +144,92 @@ def charts(country: Annotated[str, Query(pattern="^[A-Za-z]{2}$")] = "ZZ"):
     if code not in result["availableCountries"]:
         raise HTTPException(status_code=404, detail="Charts are not available for this country")
     return result
+
+
+# --- Audio streaming (yt-dlp) ------------------------------------------------
+
+_format_cache: dict[str, tuple[str, float]] = {}
+_CACHE_TTL = 300.0
+
+
+def _resolve_audio_url(video_id: str) -> str | None:
+    cached = _format_cache.get(video_id)
+    if cached and time.time() - cached[1] < _CACHE_TTL:
+        return cached[0]
+    try:
+        import yt_dlp
+
+        with yt_dlp.YoutubeDL({"format": "bestaudio", "quiet": True, "no_warnings": True}) as ydl:
+            info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
+        url = None
+        if info:
+            if info.get("url"):
+                url = info["url"]
+            elif info.get("requested_formats"):
+                url = info["requested_formats"][0].get("url")
+        if url:
+            _format_cache[video_id] = (url, time.time())
+        return url
+    except Exception:
+        logger.exception("yt-dlp resolve failed for %s", video_id)
+        return None
+
+
+@app.get("/stream/{video_id}")
+async def stream(video_id: str, request: Request):
+    url = _resolve_audio_url(video_id)
+    if not url:
+        raise HTTPException(status_code=502, detail="Could not resolve audio stream")
+
+    range_header = request.headers.get("range")
+    upstream_headers = {}
+    if range_header:
+        upstream_headers["Range"] = range_header
+
+    try:
+        req = urllib.request.Request(url, headers=upstream_headers)
+        resp = urllib.request.urlopen(req)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail="Upstream stream failed") from exc
+
+    def gen() -> Generator[bytes, None, None]:
+        try:
+            while True:
+                chunk = resp.read(64 * 1024)
+                if not chunk:
+                    break
+                yield chunk
+        finally:
+            try:
+                resp.close()
+            except Exception:
+                pass
+
+    status = resp.status
+    headers = {
+        "Accept-Ranges": "bytes",
+        "Content-Type": resp.headers.get("Content-Type", "audio/webm"),
+    }
+    for h in ("Content-Length", "Content-Range"):
+        v = resp.headers.get(h)
+        if v:
+            headers[h] = v
+
+    return StreamingResponse(gen(), status_code=status, headers=headers)
+
+
+@app.post("/admin/update-extractor")
+def update_extractor():
+    try:
+        result = subprocess.run(
+            [os.sys.executable, "-m", "pip", "install", "-U", "yt-dlp"],
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+        if result.returncode != 0:
+            return {"ok": False, "detail": result.stderr or result.stdout}
+        return {"ok": True, "detail": result.stdout}
+    except Exception as exc:
+        logger.exception("extractor update failed")
+        return {"ok": False, "detail": str(exc)}
