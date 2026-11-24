@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Lunaris">
+  <defs>
+    <mask id="lunaris-cr">
+      <rect width="512" height="512" fill="black"/>
+      <circle cx="256" cy="256" r="194.56" fill="white"/>
+      <circle cx="332.8" cy="215.04" r="179.2" fill="black"/>
+    </mask>
+  </defs>
+  <ellipse cx="256" cy="256" rx="240.64" ry="89.6" fill="none" stroke="#6d7cff" stroke-opacity="0.5" stroke-width="12.288" transform="rotate(-28 256 256)"/>
+  <g mask="url(#lunaris-cr)"><rect width="512" height="512" fill="#6d7cff"/></g>
+  <circle cx="358.4" cy="117.76" r="31.744" fill="#8a97ff"/>
+</svg>

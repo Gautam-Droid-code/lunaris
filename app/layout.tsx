@@ -7,6 +7,7 @@ import { NowPlayingBar } from "@/components/now-playing-bar";
 import { PlayerProvider } from "@/components/player-provider";
 import { RoomPresence } from "@/components/room-presence";
 import { RoomSyncProvider } from "@/components/room-sync-provider";
+import { SplashScreen } from "@/components/splash-screen";
 import { TrackSheet } from "@/components/track-sheet";
 import "./globals.css";
 import "./neumorphism.css";
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-dvh font-sans">
+        <SplashScreen />
         <PlayerProvider>
           <RoomPresence />
           <RoomSyncProvider>

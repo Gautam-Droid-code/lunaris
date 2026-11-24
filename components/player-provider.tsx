@@ -14,7 +14,10 @@ import { recordPlay } from "@/lib/library-store";
 import type { Radio, Track } from "@/lib/music";
 import { createPlayer, initialState, type PlayerState } from "@/lib/player-engine";
 import { createAudioBackend } from "@/lib/audio-backend";
+import { connectMediaSession } from "@/lib/media-session";
+import { createNativeAudioBackend, setNativeAudioMetadata } from "@/lib/native-audio-backend";
 import { createYouTubePlayer } from "@/lib/youtube";
+import { Capacitor } from "@capacitor/core";
 
 async function fetchRadio(videoId: string): Promise<Track[]> {
   const response = await fetch(`/api/radio/${encodeURIComponent(videoId)}`);
@@ -96,8 +99,18 @@ function PlayerHost({ visible }: { visible: boolean }) {
 
     if (!playerCreated) {
       playerCreated = true;
+      const isNative = Capacitor.isNativePlatform();
       const useAudio = process.env.NEXT_PUBLIC_AUDIO_BACKEND === "audio";
-      if (useAudio) {
+      if (isNative) {
+        createNativeAudioBackend(host, {
+          onReady: player.connect,
+          onState: player.handleState,
+          onError: player.handleError,
+          onLoadFailure: player.handleLoadFailure,
+          onNext: () => player.next(),
+          onPrev: () => player.prev(),
+        });
+      } else if (useAudio) {
         createAudioBackend(host, {
           onReady: player.connect,
           onState: player.handleState,
@@ -182,6 +195,25 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     () => true,
     () => false,
   );
+  useEffect(() => {
+    return connectMediaSession(player);
+  }, []);
+
+  useEffect(() => {
+    setNativeAudioMetadata({
+      title: state.currentTrack?.title ?? undefined,
+      artist:
+        state.currentTrack?.artists
+          ?.map((a) => a.name)
+          .filter(Boolean)
+          .join(", ") || undefined,
+      album: state.currentTrack?.album?.name ?? undefined,
+      artworkUrl: state.currentTrack?.thumbnails?.length
+        ? state.currentTrack.thumbnails[state.currentTrack.thumbnails.length - 1].url
+        : undefined,
+    });
+  }, [state.currentTrack]);
+
   const value = useMemo(() => ({ ...state, ...actions }), [state]);
 
   return (

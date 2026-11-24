@@ -8,6 +8,7 @@ import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { artistNames } from "@/lib/format";
 import { getCharts } from "@/lib/music";
+import { Capacitor } from "@capacitor/core";
 import type { Track } from "@/lib/music";
 
 type Charts = NonNullable<Awaited<ReturnType<typeof getCharts>>>;
@@ -76,6 +77,15 @@ export function WelcomeView({
               >
                 Log in
               </Link>
+            )}
+            {!Capacitor.isNativePlatform() && (
+              <a
+                href="/downloads/lunaris.apk"
+                download
+                className="nm-card nm-raised-sm inline-flex min-h-12 items-center justify-center rounded-2xl px-6 text-sm font-medium nm-strong"
+              >
+                Download Android app (.apk)
+              </a>
             )}
           </div>
         </section>

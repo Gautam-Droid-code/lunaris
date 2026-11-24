@@ -7,6 +7,7 @@ import { authenticate, signInWithGoogle, type AuthResult } from "@/app/login/act
 import { Notice } from "@/components/notice";
 import { loadLibrary } from "@/lib/library-store";
 import { safeNext } from "@/lib/safe-next";
+import { Capacitor } from "@capacitor/core";
 
 const fieldWrapper = "nm-field flex min-h-12 items-center px-4";
 
@@ -131,6 +132,16 @@ export function LoginForm() {
         <GoogleMark />
         Continue with Google
       </button>
+
+      {!Capacitor.isNativePlatform() && (
+        <a
+          href="/downloads/lunaris.apk"
+          download
+          className="min-h-11 text-center text-sm nm-link"
+        >
+          Download Android app (.apk)
+        </a>
+      )}
 
       <button
         type="button"
